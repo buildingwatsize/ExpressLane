@@ -1,0 +1,153 @@
+<!---------------------------------------------------Reset password Page------------------------------------------------>
+<!doctype html>
+  <html>
+    <head>
+      <title>Reset Password</title>
+      <link rel="stylesheet" href="lib/uni.css">
+      <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
+      <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+      <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script><!-- load bootstrap css -->
+      <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+      <script>
+      //if(form.password.value != "" && form.password.value == form.confirm_password.value) {
+        function checkForm(form){
+        if(form.password.value != "" ) {
+          if(form.password.value.length < 8) {
+            //document.getElementById('pass').innerHTML = "<p class='text-danger'>Plaese try again.</p>";
+            document.getElementById("alert").className = "alert alert-danger";
+            document.getElementById('alert').innerHTML = "<strong>Password must contain at least 8 characters!</strong>";
+            //alert("Error: Password must contain at least 8 characters!");
+            form.password.focus();
+            return false;
+          }
+          if(form.password.value == form.username.value) {
+            document.getElementById("alert").className = "alert alert-danger";
+            document.getElementById('alert').innerHTML = "<strong>Password must be different from Username!</strong>";
+            //alert("Error: Password must be different from Username!");
+            form.password.focus();
+            return false;
+          }
+          re = /[0-9]/;
+          if(!re.test(form.password.value)) {
+            document.getElementById("alert").className = "alert alert-danger";
+            document.getElementById('alert').innerHTML = "<strong>Password must contain at least one number (0-9)!</strong>";
+            //alert("Error: password must contain at least one number (0-9)!");
+            form.pwd1.focus();
+            return false;
+          }
+          re = /[a-z]/;
+          if(!re.test(form.password.value)) {
+            document.getElementById("alert").className = "alert alert-danger";
+            document.getElementById('alert').innerHTML = "<strong>Password must contain at least one lowercase letter (a-z)!</strong>";
+            //alert("Error: password must contain at least one lowercase letter (a-z)!");
+            form.password.focus();
+            return false;
+          }
+          re = /[A-Z]/;
+          if(!re.test(form.password.value)) {
+            document.getElementById("alert").className = "alert alert-danger";
+            document.getElementById('alert').innerHTML = "<strong>Password must contain at least one uppercase letter (A-Z)!</strong>";
+            //alert("Error: password must contain at least one uppercase letter (A-Z)!");
+            form.password.focus();
+            return false;
+          }
+        } else {
+          document.getElementById("alert").className = "alert alert-danger";
+          document.getElementById('alert').innerHTML = "<strong>Please check that you've entered and confirmed your password!</strong>";
+          //alert("Error: Please check that you've entered and confirmed your password!");
+          form.password.focus();
+          return false;
+        }
+        if(document.getElementById('password2').value === document.getElementById('confirm_password2').value) { 
+          document.getElementById('message').innerHTML = "<p class='text-danger'></p>";
+        } else {
+            document.getElementById('message').innerHTML = "<p class='text-danger'>These passwords don't match. Try again?</p>";
+            return false;
+          }
+        }
+      </script>
+    </head>
+    <body style="background-color: #006DA6;">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-xs-12 nopadding">
+            <% include ./base %>
+          </div>
+        <div class="col-xs-12 nopadding">
+          <% if(!req.isAuthenticated()) { %>
+            <% include ./menu %>
+          <% }else{ %>
+            <% if(user.role===1){%>
+              <% include ./menuadmin %>
+            <%}else{ %>
+              <% include ./menumem %>       
+            <% } %>
+          <% } %>
+        </div>
+        <div class="col-xs-2 nopadding"  style="min-width:250px;">
+          <% if(!req.isAuthenticated()) { %>
+            <% include ./signin %>
+          <% }else{ %>
+            <% if(user.role===1){%>
+              <% include ./admin %>
+            <%}else{ %>
+              <% include ./member %>       
+            <% } %>
+          <% } %>
+        </div>
+        <div class="col-xs-10 nopadding">
+          <div id="contenttext">
+            <div style="margin-top: 0;">
+              <div class="container">
+              <br><br>
+              <h1><strong>Reset  Password  For  Express  Lane  Sevices<strong></h1>  
+              <form action="/repass" method="post" onsubmit="return checkForm(this);">
+                <% if(typeof(error) !== 'undefined') {%>
+                <div style= "margin:0px auto" class="alert alert-danger" id="signin"><strong><%= error %></strong></div><br>
+                <% } %>
+                <br><br>
+                <div class="form-group">
+                  <div id="alert" class="hide" role="alert"></div>
+                  <div class="col-xs-3">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" name="username" id="username" placeholder="Username" required="true">
+                  </div>
+                </div>
+                <br><br><br>
+                <div class="form-group">
+                  <div class="col-xs-3">
+                    <label for="email">Email</label>
+                    <input type="text" class="form-control" name="email" id="email" placeholder="Email" required="true" onchange="check_email();">
+                  </div>
+                </div> 
+                <br><br><br> 
+                <div class="form-group">
+                  <div class="col-xs-3">
+                    <label for="password">Create a password</label>
+                    <input type="password" class="form-control" name="password" id="password2" placeholder="Password"  onchange="check_pass()">
+                  </div>
+                </div>
+                <br><br><br>
+                <div class="form-group">
+                  <div class="col-xs-3">
+                    <label for="con-password">Confirm your password</label>
+                    <input type="password" class="form-control" name="confirm_password" id="confirm_password2" placeholder="Confirm Password"  onchange="check_pass()">
+                  </div>
+                  <br><br>
+                  <div class="col-xs-4" id='message'></div>
+                </div>
+                <br><br>
+                <div class="col-xs-3"><br><button type="submit" class="btn btn-info btn-md">Submit</button></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    <div class="col-xs-12 nopadding">
+      <% include ./footer %>
+    </div>
+  </body>
+</html>
+
+

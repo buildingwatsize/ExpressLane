@@ -1,0 +1,430 @@
+<!doctype html>
+<html>
+<head>
+  <title>Service Activities</title>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <link rel="stylesheet" href="lib/uni.css">
+  <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+
+  <!--<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.min.css" >
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker3.min.css">-->
+
+  <!--<link href="/vendor/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />-->
+
+  <!-- Include Required Prerequisites -->
+  <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css" />
+  <!-- Include Date Range Picker -->
+  <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+
+  <link rel="stylesheet" type="text/css" href="https://code.jquery.com/jquery-1.10.1.min.js">
+
+  <script>
+      function checkForm(form){
+
+        mac = /^([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])$/;  
+        if(!mac.test(form.resourceString1.value)) {  
+          //alert("Error: Source MAC Address Is Error!");
+          document.getElementById("alert").className = "alert alert-danger";
+          document.getElementById('alert').innerHTML = "<strong>Error: Source MAC Address Not Correct!</strong>";
+          form.resourceString1.focus();
+          return false;  
+        }
+        if(!mac.test(form.resourceString2.value)) {  
+          document.getElementById("alert").className = "alert alert-danger";
+          document.getElementById('alert').innerHTML = "<strong>Error: Destination MAC Address Not Correct!</strong>";
+          form.resourceString2.focus();
+          return false;  
+        }
+
+        ip = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        if(!ip.test(form.IP1.value)) {  
+          document.getElementById("alert").className = "alert alert-danger";
+          document.getElementById('alert').innerHTML = "<strong>Error: Source IP Address Not Correct!</strong>";
+          form.IP1.focus();
+          return false;  
+        }
+        if(!ip.test(form.IP2.value)) {  
+          document.getElementById("alert").className = "alert alert-danger";
+          document.getElementById('alert').innerHTML = "<strong>Error: Destination IP Address Not Correct!</strong>";
+          form.IP2.focus();
+          return false;  
+        }
+      }
+  </script>
+
+
+  <style>
+  .datepicker{z-index:1151 !important;}
+  </style>
+
+
+
+</head>
+
+<?php
+  mysql_connect("localhost","usr_select","") or die(mysql_error());
+  mysql_select_db("Name_MAC");
+?>
+
+
+<body style="background-color: #006DA6; ">
+  <div class="container-fluid">
+  	<div class="row">
+  	  <div class="col-xs-12 nopadding">
+  	    <% include ./base %>
+  	  </div>
+  	  <div class="col-xs-12 nopadding">
+  	    <% include ./menumem %>
+  	  </div>
+  	  <div class="col-xs-2 nopadding"  style="min-width:250px;">
+  	    <%include ./member %>
+  	  </div>
+      <div class="col-xs-10 nopadding">
+        <div id="contenttext">
+          <div style="margin : 30px;">
+            <ul class="nav nav-tabs">
+              <li class="active"><a data-toggle="tab" href="#home">All Services</a></li>
+              <li><a data-toggle="tab" href="#state">Services State</a></li>
+              <li><a data-toggle="tab" href="#history">History Logs</a></li>
+
+            </ul>
+
+            <div class="tab-content">
+              <div id="home" class="tab-pane fade in active">
+                <p></p>
+
+                <table id="reserve" class="table table-striped">
+                  <thead>
+                    <tr bgcolor="#1E90FF">
+                        <td colspan="8"><center><label><font color="white"><h5>My Reserve Express Lane</h5></font></label></center></td>
+                    </tr>
+                    <tr>
+                      <th>Source MAC</th>
+                      <th>Destination MAC</th>
+                      <th>Source IP</th>
+                      <th>Destination IP</th>
+                      <th>Start</th>
+                      <th>End</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if(data.length){               
+                    for(var i = 0;i < data.length;i++) { %>
+                      <tr>
+                        <td><%=data[i].resourceString1%></td>
+                        <td><%=data[i].resourceString2%></td>
+                        <td><%=data[i].IP1%></td>
+                        <td><%=data[i].IP2%></td>
+                        <td><%=data[i].startTime%></td>
+                        <td><%=data[i].endTime%></td>
+                        <% if(data[i].actType === 0) { %>
+                          <td><button type="button" class="col-xs-10 btn btn-info btn-sm"</td><%=data[i].nameE%></button></td>
+                        <% } %>
+                        <% if(data[i].actType === 4) { %>
+                          <td><button type="button" class="col-xs-10 btn btn-success btn-sm"</td><%=data[i].nameE%></button></td>
+                        <% } %>
+                        <% if(data[i].actType === 7) { %>
+                          <td><button type="button" class="col-xs-10 btn btn-primary btn-sm"</td><%=data[i].nameE%></button></td>
+                        <% } %>
+                        <td><button type="button" class="btn btn-default btn-sm" data-toggle="modal" href="#myModalcancel<%=data[i].said%>"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> cancel</button></td>
+                      </tr>
+                    <% }
+                    } %>
+                  </tbody>
+                </table>
+
+                <br/> <br/> <p align="center"><button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#myModal1"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Reserve New Express</button> <br /> <br /> <br />
+
+                <% if(data.length){ 
+                                
+                 for(var i = 0;i < data.length;i++) { %>
+                  <div id="myModalcancel<%=data[i].said%>" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-body">
+                          <h4><center> Are you sure you want to cancel Express Lane? </center></h4>
+                        </div>
+                        <center><div class="modal-footer">
+                          <a class="btn btn-success" href="/serviceac/cancel/<%=data[i].said%>">Yes</a>
+                          <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+                        </div></center>
+                      </div>
+                     </div>
+                    </div> <% }%>
+                              
+                  <% } %>
+
+        			  <div class="modal fade" id="myModal1">
+        				  <div class="modal-dialog" role="document">
+        				    <div class="modal-content">
+        				      <div class="modal-header">
+        				        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        				          <span aria-hidden="true">&times;</span>
+        				        </button>
+        				        <h4 class="modal-title">Reserve New Express</h4>
+        				      </div>
+                      <div id="alert" class="hide" role="alert"></div>
+        				      <div class="modal-body">
+        				        <form action="/addServiceac" method="post" onsubmit="return checkForm(this);">
+
+<!-- Begin Modified by Chinnawat Chimdee -->
+                          <b>Source: </b>
+                          <div class="dropdown">
+                          <select class="btn btn-default" style="background: white" name="resourceString1" id="resourceString1" onclick=showFn1()>
+                            <option value="" disabled="disabled"><- Please Select Item -></option>
+                            <option value="00:13:F7:D1:D2:35">BSE(KMUTNB)</option>
+                            <option value="00:26:5A:7C:03:AF">PYT1(Uninet)</option>
+                            <option value="00:13:F7:D1:D2:2D">PYT2(CU)</option>
+                            <option value="00:1C:F0:CF:EB:AE">SLA(MU)</option>
+                            <option value="5C:D9:98:53:BF:0F">RMUTSB(RMUTSB)</option>
+                            <option value="00:13:F7:D1:D2:2F">RMUTT(RMUTT)</option>
+                            <option value="00:18:F8:0B:59:17">KKU(KKU)</option>
+                          </select>
+                          &nbsp
+                          <button class="btn btn-default" id="show_src" disabled="disabled"></button> 
+                          <button class="btn btn-default" id="show_srcip" disabled="disabled"></button> 
+                          <input type="hidden" class="form-control" name="IP1" id="IP1"></input>
+                          </div>  
+
+                          <br>
+                          <b>Destination: </b>
+                          <div class="dropdown">
+                          <select class="btn btn-default" style="background: white" name="resourceString2" id="resourceString2" onclick=showFn2()>
+                            <option value="" disabled="disabled"><- Please Select Item -></option>
+                            <option value="00:13:F7:D1:D2:35">BSE(KMUTNB)</option>
+                            <option value="00:26:5A:7C:03:AF">PYT1(Uninet)</option>
+                            <option value="00:13:F7:D1:D2:2D">PYT2(CU)</option>
+                            <option value="00:1C:F0:CF:EB:AE">SLA(MU)</option>
+                            <option value="5C:D9:98:53:BF:0F">RMUTSB(RMUTSB)</option>
+                            <option value="00:13:F7:D1:D2:2F">RMUTT(RMUTT)</option>
+                            <option value="00:18:F8:0B:59:17">KKU(KKU)</option>
+                          </select>
+                          &nbsp
+                          <button class="btn btn-default" id="show_dest" disabled="disabled"></button> 
+                          <button class="btn btn-default" id="show_desip" disabled="disabled"></button> 
+                          <input type="hidden" class="form-control" name="IP2" id="IP2"></input>
+                          </div>  
+
+                          <script type="text/javascript">
+                          var Mac_table = [ 
+                              {
+                                name: 'KMUTNB',
+                                id: 'BSE',
+                                mac: '00:13:F7:D1:D2:35',
+                                ip: '10.10.1.1'
+                              },
+                              { 
+                                name: 'Uninet',
+                                id: 'PYT1',
+                                mac: '00:26:5A:7C:03:AF',
+                                ip: '10.10.1.2'
+                              },
+                              { 
+                                name: 'CU',
+                                id: 'PYT2',
+                                mac: '00:13:F7:D1:D2:2D',
+                                ip: '10.10.1.3'
+                              },
+                              {
+                                name: 'MU',
+                                id: 'SLA',
+                                mac: '00:1C:F0:CF:EB:AE',
+                                ip: '10.10.1.4'
+                              },
+                              {
+                                name: 'RMUTSB',
+                                id: 'RMUTSB',
+                                mac: '5C:D9:98:53:BF:0F',
+                                ip: '10.10.1.5'
+                              },
+                              {
+                                name: 'RMUTT',
+                                id: 'RMUTT',
+                                mac: '00:13:F7:D1:D2:2F',
+                                ip: '10.10.1.6'
+                              },
+                              {
+                                name: 'KKU',
+                                id: 'KKU',
+                                mac: '00:18:F8:0B:59:17',
+                                ip: '10.10.1.7'
+                              }];  
+
+                          function showFn1() {
+                              document.getElementById("show_src").innerHTML = document.getElementById("resourceString1").value;
+                              var mti = 0; //Mac table index
+                              while (mti < Mac_table.length){
+                                if(Mac_table[mti].mac == document.getElementById("resourceString1").value){
+                                  document.getElementById("show_srcip").innerHTML = Mac_table[mti].ip; //display
+                                  document.getElementById("IP1").value = Mac_table[mti].ip; //pass value
+                                  mti = 0;
+                                  break;
+                                }
+                                mti = mti + 1;
+                              }  
+                          }
+                          function showFn2() {
+                              document.getElementById("show_dest").innerHTML = document.getElementById("resourceString2").value;
+                              var mti = 0; //Mac table index
+                              while (mti < Mac_table.length){
+                                if(Mac_table[mti].mac == document.getElementById("resourceString2").value){
+                                  document.getElementById("show_desip").innerHTML = Mac_table[mti].ip; //display
+                                  document.getElementById("IP2").value = Mac_table[mti].ip; //pass value
+                                  mti = 0;
+                                  break;
+                                }
+                                mti = mti + 1;
+                              }  
+                          }
+                          </script>                      
+
+                          <script type="text/javascript">
+                            $('#resourceString1').on('change', function(){
+                              $("#resourceString2 option").each(function(){
+                                if ($(this).text() == $('#resourceString1 option:selected').text()) {
+                                  $(this).attr('disabled',true);
+                                }
+                                else {
+                                  $(this).attr('disabled',false);
+                                }
+                              });
+                            });
+                            $('#resourceString2').on('change', function(){
+                              $("#resourceString1 option").each(function(){
+                                if ($(this).text() == $('#resourceString2 option:selected').text()) {
+                                  $(this).attr('disabled',true);
+                                }
+                                else {
+                                  $(this).attr('disabled',false);
+                                }
+                              });
+                            });
+                          </script>
+<!-- End Modified by Chinnawat Chimdee -->
+
+                          <!-- <div class="form-group">
+                            <label>Source MAC Address</label>
+                            <input type="text" class="form-control" name="resourceString1"  id="resourceString1" placeholder="xx:xx:xx:xx:xx:xx" required="true">
+                          </div>
+
+                          <div class="form-group">
+                            <label>Destination MAC Address</label>
+                            <input type="text" class="form-control" name="resourceString2" id="resourceString2" placeholder="xx:xx:xx:xx:xx:xx" required="true">
+                          </div> -->  
+
+                          <br>
+                          <div class="form-group">
+                            <label>Duration of services</label>
+                            <div class="input-daterange" id="datePicker">
+                              <input type="text" style="text-align: center;" class="datePicker" name="startTime" id="startTime" placeholder="YYYY/MM/DD hh:mm" size="17" >
+                              &nbsp;to&nbsp;
+                              <input type="text" style="text-align: center;" class="datePicker" name="endTime" id="endTime" placeholder="YYYY/MM/DD hh:mm" size="17">
+                              <span class="datePicker"><span class="glyphicon glyphicon-calendar"></span></span>
+                            </div>
+                          </div>
+
+                          <div class="modal-footer">
+                            <button type="submit" class="btn btn-success btn-md" value="addServiceac" >Submit</button> <button type="button" class="btn btn-danger btn-md" data-dismiss="modal">Cancel</button> 
+                          </div>
+                        </form>
+          				    </div><!--class="modal-body"-->
+          				  </div><!--class="modal-content"-->
+          				</div><!--class="modal-dialog" role="document"-->
+        			  </div> <!--class="modal fade" id="myModal1"-->
+
+
+              </div>
+
+              <div id="state" class="tab-pane fade">
+                <p></p>
+                <table id="statetable" class="table table-striped">
+                  <thead>
+                    <tr bgcolor="#1E90FF">
+                      <td colspan="7"><center><label><font color="white"><h5>State Logs</h5></font></label></center></td>
+                    </tr>
+                    <tr>
+                      <th>Source MAC</th>
+                      <th>Destination MAC</th>
+                      <th>Source IP</th>
+                      <th>Destination IP</th>
+                      <th>Start Time</th>
+                      <th>End Time</th>
+                      <th>Type</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <% if(state.length){                                           
+                      for(var i = 0;i < state.length;i++) { %>
+                      <tr>
+                        <td><%=state[i].resourceString1%></td>
+                        <td><%=state[i].resourceString2%></td>
+                        <td><%=state[i].IP1%></td>
+                        <td><%=state[i].IP2%></td>
+                        <td><%=state[i].startTime%></td>
+                        <td><%=state[i].endTime%></td>
+                        <td><%=state[i].nameE%></td>
+                      </tr>                   
+                      <% }                      
+                    } %>
+                  </tbody>
+                </table>
+              </div> <!--id="history" class="tab-pane fade"-->
+              <div id="history" class="tab-pane fade">
+                <p>
+                <table id="historytable" class="table table-striped">
+                  <thead>
+                    <tr bgcolor="#1E90FF">
+                      <td colspan="9"><center><label><font color="white"><h5>History Logs</h5></font></label></center></td>
+                    </tr>
+                    <tr>
+                      <th>Source MAC</th>
+                      <th>Destination MAC</th>
+                      <th>Source IP</th>
+                      <th>Destination IP</th>
+                      <th>Start Time</th>
+                      <th>End Time</th>
+                      <th>Timestamp</th>
+                      <th>Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if(history.length){             
+                      for(var i = 0;i < history.length;i++) { %>
+                      <tr>
+                        <td><%=history[i].resourceString1%></td>
+                        <td><%=history[i].resourceString2%></td>
+                        <td><%=history[i].IP1%></td>
+                        <td><%=history[i].IP2%></td>
+                        <td><%=history[i].startTime%></td>
+                        <td><%=history[i].endTime%></td>
+                        <td><%=history[i].timestamp%></td>
+                        <td><%=history[i].nameE%></td>
+                      </tr>                   
+                      <%}
+                    }%>
+                  </tbody>
+                </table>
+              </div>
+            </div> <!--class="tab-content"-->
+          </div> <!--style="margin : 30px;"-->
+        </div> <!--id="contenttext"-->
+      </div> <!--class="col-xs-10 nopadding"-->
+    </div> <!--class="row"-->
+    <div class="col-xs-12 nopadding">
+      <% include ./footer %>
+    </div>
+  </div> <!--class="container-fluid"-->
+
+</body>
+
+</html>
+
+

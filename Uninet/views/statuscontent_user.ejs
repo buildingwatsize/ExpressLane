@@ -1,0 +1,107 @@
+<!---------------------------------------------------Status content Member and Guest------------------------------------------------>
+<!doctype html>
+<html>
+<head>
+    <title>Status</title>
+    <link rel="stylesheet" href="lib/uni.css">
+    <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script><!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+    
+    <script type="text/javascript">
+      $(document).ready(function($) {
+        console.log('1111111111111111');
+        $('#mytable').DataTable( {
+            "pagingType": "full_numbers"
+        } );
+        
+      } );
+    </script>
+</head>
+<body style="margin: 0; border: 0; display">
+
+    <div id="contenttext"> 
+      <div style="margin:30px">
+      <table id="mytable" class="table table-striped">
+   <thead>
+      <tr>
+        <th>ID</th>
+        <th>Node Name</th>
+        <th>Status</th>
+	      <th>Update</th>
+	     <th>Duration</th>
+      </tr>
+    </thead>
+    <body>
+      <% if(status_user.length){ 
+                                
+                 for(var i = 0;i < status_user.length;i++) { %>
+      <tr>
+        <td><%=status_user[i].id%></td>
+        <td><%=status_user[i].zone%></td>
+        <td><% if(status_user[i].statuss === "Offline") {%>
+                         <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#modalOffline">Offline</button>
+       <% }if(status_user[i].statuss === "Online") {%>
+                         <button type="button" class="btn btn-success btn-xs" data-toggle="modal" href="#modalOnline<%=status_user[i].id%>" >Online</button>
+       <%}%></td>
+  <td><%=status_user[i].start_time%></td>
+  <td><%=status_user[i].duration_time%></td>
+      </tr>                   
+
+         <% }
+            
+             }else{ %>
+                 <tr>
+                    <td colspan="6"><center>No User Requested</center></td>
+                 </tr>
+            <% } %>
+    </body>
+ 
+</table>
+      </div>
+</div>
+</body>
+  <% if(status_user.length){           
+    for(var i = 0;i < status_user.length;i++) { %>
+    <div class="modal fade" id="modalOnline<%=status_user[i].id%>" role="dialog">
+      <div class="modal-dialog">  
+      <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Detail</h3>
+          </div>
+            <div class="modal-body"> 
+              <table class="table table-condensed">
+                <thead>
+                     <tr>
+                        <th>Src Mac</th>
+                        <th>Dest Mac</th>
+                        <th>Inport</th>
+                        <th>Outport</th>
+                        <th>Packet Count</th>
+                      </tr>
+                  </thead>
+                    <tbody >
+                        <tr>
+                          <td><%=status_user[i].src_mac%></td>
+                          <td><%=status_user[i].dest_mac%></td>
+                          <td><%=status_user[i].in_port%></td>
+                          <td><%=status_user[i].out_port%></td>
+                          <td><%=status_user[i].packet_count%></td>
+                        </tr>                   
+          </tbody>
+      </table>
+            </div>
+          <div class="modal-footer">
+             <button type="button" class="btn btn-danger btn-md" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+      <% }
+    }%>
+</html>

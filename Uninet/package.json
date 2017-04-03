@@ -1,0 +1,21 @@
+{
+   "name": "passport_mysql_express_auth",
+   "description": "ExpressJs + Passport.js + MySQL Authentication",
+   "version": "1.0.0",
+   "author": "",
+   "main": "app.js",
+   "dependencies": {
+      "express": "3.5.1",
+      "nodemailer": "*",
+      "body-parser": "*",
+      "cookie-parser": "*",
+      "express-session": "*",
+      "express-myconnection": "1.0.4",
+      "bcrypt-nodejs": "*",
+      "ejs": "*",
+      "passport": "*",
+      "passport-local": "*",
+      "mysql": "2.2.0",
+      "bookshelf": "0.5"
+   }
+}

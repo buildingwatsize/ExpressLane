@@ -1,0 +1,26 @@
+<!-- Nav Bar Header -->
+  <header id="header">
+    <nav id="main-menu" class="navbar navbar-default navbar-fixed-top" role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><img src="uninet_navbar.gif" style="display:inline-block; height:60px" alt="logo">&nbsp&nbsp&nbsp
+          <font>UniNet Express Lane Services</font></a>
+        </div>
+        <% if(!req.isAuthenticated()) { %>
+          <% include ./menu %>
+        <% }else{ %>
+          <% if(user.role===1){%>
+            <% include ./menuadmin %>
+          <%}else{ %>
+            <% include ./menumem %>       
+          <% } %>
+        <% } %>
+      </div><!--/.container-->
+    </nav>
+  </header>

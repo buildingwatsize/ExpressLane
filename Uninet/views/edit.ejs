@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+    <title>Edit</title>
+    <link rel="stylesheet" href="lib/uni.css">
+    <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script><!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+</head>
+<body style="margin: 0; border: 0; display">
+<head>
+<% include ./base %>
+
+
+<% include ./menuadmin %>
+</head>
+
+  <div id="content">
+    <div id="contenttext"> 
+      <div style="margin:30px">
+
+    <form action="/user/edit/<%=data[0].id%>" method="post">
+
+        <br><div class="form-group">
+            <br>
+	    <label class="col-sm-2 control-label"><font color="red">*</font> Username</label> 
+		
+		<div class="col-sm-3">
+            		<input type="text" class="form-control" name="username" id="username" placeholder="username" value="<%=data[0].username%>" required="true">
+		</div>
+        </div>
+	
+
+       <br><div class="form-group">
+	    <label class="col-sm-2 control-label"><font color="red">*</font> First Name</label>
+		<div class="col-sm-4">
+            		<input type="text" class="form-control" name="NameE" id="NameE" placeholder="NameE" value="<%=data[0].NameE%>" required="true">
+		</div>
+        </div>
+
+        <br><div class="form-group">
+            <label class="col-sm-2 control-label"><font color="red">*</font> Last Name</label>
+		<div class="col-sm-4">
+            		<input type="text" class="form-control" name="LastNameE" id="LastNameE" placeholder="LastNameE" value="<%=data[0].LastNameE%>" required="true">
+		</div>
+        </div>
+
+	<br><div class="form-group">
+            <label class="col-sm-2 control-label"><font color="red">*</font> Organization</label>
+                <div class="col-sm-4">
+                    <select name="org" class="form-control" value="<%=data[0].org%>" title="Organization" required>
+                        <option value="">Please Select</option>
+                        <option value="1">Chulalongkorn University</option>
+                        <option value="2">Kasetsart University</option>
+                        <option value="3">Khon Kean University</option>
+                        <option value="4">Chiang Mai University</option>
+			<option value="5">Thaksin University</option>
+                        <option value="6">King Mongkut's University of Technology Thonburi</option>
+                        <option value="7">King Mongkut's University of Technology North Bangkok</option>
+                        <option value="8">Suranaree University of Technology</option>
+			<option value="9">Thammasat University</option>
+                        <option value="10">Nakhon Phanom University</option>
+                        <option value="11">Princess of Naradhiwas University</option>
+                        <option value="12">Naresuan University</option>
+			<option value="13">Burapha University</option>
+                        <option value="14">University of Phayao</option>
+                        <option value="15">Mahasarakham University</option>
+                        <option value="16">Mahidol University</option>
+			<option value="17">Maejo University</option>
+                        <option value="18">Mae Fah Luang University</option>
+                        <option value="19">Walailak University</option>
+                        <option value="20">Srinakharinwirot University</option>
+			<option value="21">Silpakorn University</option>
+                        <option value="22">Prince of Songkla University</option>
+                        <option value="23">Ubon Ratchathani University</option>
+                        <option value="24">King Mongkut's Institute of Technology Ladkrabang</option>
+
+
+                    </select>
+                </div>
+        </div>
+
+
+        <br><div class="form-group">
+	    <label class="col-sm-2 control-label"><font color="red">*</font> Phone number</label>
+		<div class="col-sm-3">
+            		<input type="text" class="form-control" name="phone" id="phone" placeholder="phone" value="<%=data[0].phone%>" required="true">
+		</div>
+        </div>
+
+        <br><div class="form-group">
+	    <label class="col-sm-2 control-label"><font color="red">*</font> Email</label>
+		<div class="col-sm-3">
+            		<input type="text" class="form-control" name="email" id="email" placeholder="email" value="<%=data[0].email%>" required="true">
+		</div>
+        </div>
+
+
+        <br><div class="form-group">
+	    <label class="col-sm-2 control-label"><font color="red">*</font> Member Type</label>
+		<div class="col-sm-3">
+            		<input type="text" class="form-control" name="membertype" id="membertype" value="<%=data[0].membertype%>" placeholder="membertype" required="true">
+		</div>
+        </div>
+
+        <br><div class="form-group">
+            <label class="col-sm-2 control-label"><font color="red">*</font> Role</label>
+		<div class="col-sm-3">
+                        <select name="role" class="form-control" title="role" required="true">
+                        <option value="">Please Select</option>
+                        <option value=1>Admin</option>
+                        <option value=2>Member</option>
+
+                    </select>
+		</div>
+        </div>
+
+        <br><div class="form-group">
+            <label class="col-sm-2 control-label"><font color="red">*</font> Flag</label>
+		<div class="col-sm-3">
+            		<input type="text" class="form-control" name="flag" id="flag" placeholder="flag" value="<%=data[0].flag%>" required="true">
+		</div>
+        </div>
+        <br><center><button type="submit" class="btn btn-warning btn-lg" value="save">Update</button></center>
+    </form>
+      </div>
+    </div>
+  </div>
+
+<%include ./admin%>
+<%include ./footer %>
+</body>
+</html>
+

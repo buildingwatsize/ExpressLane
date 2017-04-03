@@ -1,0 +1,40 @@
+<!---------------------------------------------------Sign up Success------------------------------------------------>
+<!doctype html>
+<html>
+  <head>
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="lib/uni.css">
+    <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script><!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+  </head>
+  <body style="background-color: #006DA6;">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-xs-12 nopadding">
+          <% include ./base %>
+        </div>
+        <div class="col-xs-12 nopadding">
+          <% include ./menu %>
+        </div>
+        <div class="col-xs-2 nopadding"  style="min-width:250px;">
+          <%include ./signin %>
+        </div>
+        <div class="col-xs-10 nopadding">
+          <div id="contenttext">
+            <div style ="margin : 30px">
+        &nbsp;&nbsp;&nbsp;ข้อมูลการสมัครของท่านได้ถูกส่งแล้ว กรุณารออีเมล์ตอบกลับจากผู้ดูแล
+ <br />
+            </div>
+          </div>
+        </div>
+        <div class="col-xs-12 nopadding">
+          <%include ./footer %>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
