@@ -1,338 +1,318 @@
-<!---------------------------------------------------Status Content Admin------------------------------------------------>
-<!doctype html>
-<html>
-<head>
-    <title>Status</title>
-    <link rel="stylesheet" href="lib/uni.css">
-    <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script><!-- load bootstrap css -->
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
-    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">    
-    <script type="text/javascript">
-      $(document).ready(function($) {
-        $('#mytable').DataTable( {
-            "pagingType": "full_numbers"
-        } );
-        $('#log_cnt').DataTable( {
-            "pagingType": "full_numbers"
-        } );
-        $('#log_Netfpga').DataTable( {
-            "pagingType": "full_numbers"
-        } );
-        $('#log_nagios').DataTable( {
-            "pagingType": "full_numbers"
-        } );
-        
-        $('#netfpga').DataTable( {
-            "pagingType": "full_numbers"
-        } );
-        $('#nagios').DataTable( {
-            "pagingType": "full_numbers"
-        } );
-      } );
-    </script>
-</head>
-<body style="margin: 0; border: 0; display">
-<div id="contenttext"> 
-    <div style="margin:30px">
-    <ul class="nav nav-pills">
-    <li class="active"><a data-toggle="pill" href="#connected">Node Connected</a></li>
-    <li><a data-toggle="pill" href="#netfpga_status">Netfpga Status</a></li>
-    <li><a data-toggle="pill" href="#nagios_status">Nagios_Status</a></li>
-    <li><a data-toggle="pill" href="#log_connected">Log_Node_Connected</a></li>
-    <li><a data-toggle="pill" href="#log_netfpga">Log_Netfpga</a></li>
-    <li><a data-toggle="pill" href="#Log_nagios">Log_Nagios</a></li>
-    </ul>
-    
-    <div class="tab-content">
-    <div id="connected" class="tab-pane fade in active">
-    <p>
-      <table id="mytable" class="table table-striped">
-   <thead>
-   <tr bgcolor="#006DA6">
-      <td colspan="8"><center><label><font color="white">Node_Connected</font></label></center></td>
-      </tr>
-      <tr>
-        <th>ID</th>
-        <th>Node Name</th>
-        <th>Status</th>
-	      <th>Update</th>
-	     <th>Duration</th>
-      </tr>
-    </thead>
-    <body>
-      <% if(status.length){ 
-                                
-                 for(var i = 0;i < status.length;i++) { %>
-      <tr>
-        <td><%=status[i].id%></td>
-        <td><%=status[i].zone%></td>
-        <td><% if(status[i].statuss === "Offline") {%>
-                         <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#modalOffline">Offline</button>
-       <% }if(status[i].statuss === "Online") {%>
-                         <button type="button" class="btn btn-success btn-xs" data-toggle="modal" href="#modalOnline<%=status[i].id%>" >Online</button>
-       <%}%></td>
-  <td><%=status[i].start_time%></td>
-  <td><%=status[i].duration_time%></td>
-      </tr>                   
-
-         <% }
-            
-             }else{ %>
-                 <tr>
-                    <td colspan="6"><center>No User Requested</center></td>
-                 </tr>
-            <% } %>
-    </body>
- 
-</table>
-</div>
-  <div id="netfpga_status" class="tab-pane fade">           <!-- Netfpga status -->
-  <br>
-    <table id="netfpga" class="table table-striped">           
-   <thead>
-      <tr bgcolor="#006DA6">
-      <td colspan="8"><center><label><font color="white">Netfpga Status</font></label></center></td>
-      </tr>
-      <tr>
-        <th>Node</th>
-        <th>Timestamp</th>
-        <th>Inport</th>
-        <th>Src_MAC</th>
-        <th>Outport</th>
-        <th>Dst_MAC</th>
-        <th>packet_count</th>
-      </tr>
-    </thead>
-    <tbody>
- 
-<% if(data.length){ 
-                                
-                 for(var i = 0;i < data.length;i++) { %>
-      <tr>
-        <td><%=data[i].zone%></td>
-        <td><%=data[i].timestamp%></td>
-        <td><%=data[i].in_port1%></td>
-        <td><%=data[i].dl_dest1%></td>
-        <td><%=data[i].output1%></td>
-        <td><%=data[i].dl_dest2%></td>
-        <td><%=data[i].packet%></td>
-      </tr>                   
-
-         <% }
-            
-             }else{ %>
-                 <tr>
-                    <td colspan="6"><center>No User Requested</center></td>
-                 </tr>
-            <% } %>
-    </tbody>
-</table>
-                       <!-- End of Netfpga status -->
-  </div>
-  <div id="log_connected" class="tab-pane fade">
-    <br>
-      <table id="log_cnt" class="table table-striped">
-   <thead>
-    <tr bgcolor="#006DA6">
-      <td colspan="9"><center><label><font color="white">Log_Node_Connected</font></label></center></td>
-      </tr>
-      <tr>
-        <th>Node</th>
-        <th>Status</th>
-        <th>Update</th>
-        <th>Duration</th>
-        <th>Src_Mac</th>
-        <th>In_port</th>
-        <th>Dst_Mac</th>
-        <th>Out_port</th>
-        <th>Packet_Count</th>
-      </tr>
-    </thead>
-    <body>
-      <% if(logs_node.length){ 
-                                
-                 for(var i = 0;i < logs_node.length;i++) { %>
-      <tr>
-        <td><%=logs_node[i].zone%></td>
-        <td><%=logs_node[i].statuss%></td>
-        <td><%=logs_node[i].start_time%></td>
-        <td><%=logs_node[i].duration_time%></td>
-        <td><%=logs_node[i].src_mac%></td>
-        <td><%=logs_node[i].in_port%></td>
-        <td><%=logs_node[i].dest_mac%></td>
-        <td><%=logs_node[i].out_port%></td>
-        <td><%=logs_node[i].packet_count%></td>
-       
-      </tr>                   
-
-         <% }
-            
-             }else{ %>
-                 <tr>
-                    <td colspan="6"><center>No User Requested</center></td>
-                 </tr>
-            <% } %>
-    </body>
- 
-</table>
-</div>
-
-  <div id="nagios_status" class="tab-pane fade">
-  <br>
-    <table id="nagios" class="table table-striped">
-    <thead>
-      <tr bgcolor="#006DA6">
-      <td colspan="8"><center><label><font color="white">Nagios Status</font></label></center></td>
-      </tr>
-      <tr>
-        <th>Hostname</th>
-        <th>Timestamp</th>
-        <th>Service</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-     <tbody>
- 
-<% if(nagios.length){ 
-      for(var i = 0;i < nagios.length;i++) { %>
-      <tr>
-        <td><%=nagios[i].zone%></td>
-        <td><%=nagios[i].timestamp%></td>
-        <td><%=nagios[i].service%></td>
-        <td><%=nagios[i].statuss%></td>
-      </tr>
-         <% }
-             }else{ %>
-                 <tr>
-                    <td colspan="3">No user</td>
-                 </tr>
-            <% } %>
-    </tbody>
-  </table>
-  </div>
-    <div id="log_netfpga" class="tab-pane fade">           <!-- Netfpga status -->
-  <br>
-    <table id="log_Netfpga" class="table table-striped">           
-   <thead>
-      <tr bgcolor="#006DA6">
-      <td colspan="8"><center><label><font color="white">Log_Netfpga Status</font></label></center></td>
-      </tr>
-      <tr>
-        <th>Node</th>
-        <th>Timestamp</th>
-        <th>Inport</th>
-        <th>Src_MAC</th>
-        <th>Outport</th>
-        <th>Dst_MAC</th>
-        <th>packet_count</th>
-      </tr>
-    </thead>
-    <tbody>
- 
-<% if(logs_netfpga.length){ 
-                                
-                 for(var i = 0;i < logs_netfpga.length;i++) { %>
-      <tr>
-        <td><%=logs_netfpga[i].zone%></td>
-        <td><%=logs_netfpga[i].timestamp%></td>
-        <td><%=logs_netfpga[i].in_port1%></td>
-        <td><%=logs_netfpga[i].dl_dest1%></td>
-        <td><%=logs_netfpga[i].output1%></td>
-        <td><%=logs_netfpga[i].dl_dest2%></td>
-        <td><%=logs_netfpga[i].packet%></td>
-      </tr>                   
-
-         <% }
-            
-             }else{ %>
-                 <tr>
-                    <td colspan="6"><center>No User Requested</center></td>
-                 </tr>
-            <% } %>
-    </tbody>
-</table>                        <!-- End of Netfpga status -->
-  </div>
-    <div id="Log_nagios" class="tab-pane fade">           <!-- Netfpga status -->
-  <br>
-    <table id="log_nagios" class="table table-striped">           
-   <thead>
-      <tr bgcolor="#006DA6">
-      <td colspan="8"><center><label><font color="white">Log_Nagios Status</font></label></center></td>
-      </tr>
-      <tr>
-        <th>Hostname</th>
-        <th>Timestamp</th>
-        <th>Service</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
- 
-<% if(logs_nagios.length){ 
-                                
-                 for(var i = 0;i < logs_nagios.length;i++) { %>
-      <tr>
-        <td><%=logs_nagios[i].zone%></td>
-        <td><%=logs_nagios[i].timestamp%></td>
-        <td><%=logs_nagios[i].service%></td>
-        <td><%=logs_nagios[i].statuss%></td>
-      </tr>                   
-
-         <% }
-            
-             }else{ %>
-                 <tr>
-                    <td colspan="6"><center>No User Requested</center></td>
-                 </tr>
-            <% } %>
-    </tbody>
-</table>                        <!-- End of Netfpga status -->
-  </div>
-</div>
-</div>
-</div>
-</body>
-  <% if(status.length){           
-    for(var i = 0;i < status.length;i++) { %>
-    <div class="modal fade" id="modalOnline<%=status[i].id%>" role="dialog">
-      <div class="modal-dialog">  
-      <!-- Modal content-->
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>Detail</h3>
-          </div>
-            <div class="modal-body"> 
-              <table class="table table-condensed">
-                <thead>
-                     <tr>
-                        <th>Src Mac</th>
-                        <th>Dst Mac</th>
-                        <th>Inport</th>
-                        <th>Outport</th>
-                        <th>Packet Count</th>
-                      </tr>
-                  </thead>
-                    <tbody >
-                        <tr>
-                          <td><%=status[i].src_mac%></td>
-                          <td><%=status[i].dest_mac%></td>
-                          <td><%=status[i].in_port%></td>
-                          <td><%=status[i].out_port%></td>
-                          <td><%=status[i].packet_count%></td>
-                        </tr>                   
-          </tbody>
-      </table>
-            </div>
-          <div class="modal-footer">
-             <button type="button" class="btn btn-danger btn-md" data-dismiss="modal">Cancel</button>
-          </div>
+<header id="header">
+  <nav id="main-menu" class="navbar navbar-default navbar-fixed-top" role="banner">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/"><img src="uninet_navbar.gif" style="display:inline-block; height:60px" alt="logo">&nbsp&nbsp&nbsp
+        <font>UniNet Express Lane Services</font></a>
+      </div>
+      <% if(user.role===1){%>
+        <div class="collapse navbar-collapse navbar-right">
+          <ul class="nav navbar-nav">
+            <li class="scroll active"><a href="/">Home</a></li>
+            <li class="scroll"><a href="/status">Status</a></li>
+            <li class="scroll"><a href="/user">User Management</a></li>
+            <li class="scroll"><a href="/emailmanage">Email Management</a></li>
+            <li class="scroll"><a href="/servicemanage">Service Management</a></li>
+          </ul>
         </div>
+      <% } %>
+    </div><!--/.container-->
+  </nav>
+</header>
+
+<section id="status">
+  <div id="container"> 
+    <div class="section-header">
+      <h2 class="section-title text-center wow fadeInDown">Status</h2>
+        <p class="text-center wow fadeInDown">ตรวจสอบสถานะการทำงาน</p>
+    </div>
+  </div>
+</section>
+
+<br>
+<div id="container">
+  <div class="row">
+    <div class="features">
+      <div class="col-md-2">
+      </div>
+      <div class="col-md-8 wow fadeIn">
+        <ul class="nav nav-tabs">
+          <li class="active"><a data-toggle="tab" href="#connected">Node Connected</a></li>
+          <li><a data-toggle="tab" href="#netfpga_status">Netfpga Status</a></li>
+          <li><a data-toggle="tab" href="#nagios_status">Nagios_Status</a></li>
+          <li><a data-toggle="tab" href="#log_connected">Log_Node_Connected</a></li>
+          <li><a data-toggle="tab" href="#log_netfpga">Log_Netfpga</a></li>
+          <li><a data-toggle="tab" href="#Log_nagios">Log_Nagios</a></li>
+        </ul>
+        <div class="tab-content">
+
+          <div id="connected" class="tab-pane fade in active">
+            <table id="mytable" class="table table-striped">
+              <thead>
+                <!-- <tr bgcolor="#006DA6">
+                    <td colspan="8">
+                        <center><label><font color="white">Node_Connected</font></label></center>
+                    </td>
+                </tr> -->
+                <tr>
+                  <th>ID</th>
+                  <th>Node Name</th>
+                  <th>Status</th>
+                  <th>Update</th>
+                  <th>Duration</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if(status.length){ 
+                  for(var i = 0;i < status.length;i++) { %>
+                    <tr>
+                      <td><%=status[i].id%></td>
+                      <td><%=status[i].zone%></td>
+                      <td><% if(status[i].statuss === "Offline") {%>
+                            <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#modalOffline">Offline</button>
+                          <% }if(status[i].statuss === "Online") {%>
+                            <button type="button" class="btn btn-success btn-xs" data-toggle="modal" href="#modalOnline<%=status[i].id%>">Online</button>
+                          <%}%>
+                      </td>
+                      <td><%=status[i].start_time%></td>
+                      <td><%=status[i].duration_time%></td>
+                    </tr>
+                  <% }
+                  } else { %>
+                    <tr>
+                      <td colspan="6"><center>No User Requested</center></td>
+                    </tr>
+                  <% } %>
+              </tbody>
+            </table>
+          </div> <!-- End of Node Connected -->
+
+          <div id="netfpga_status" class="tab-pane fade">
+            <table id="netfpga" class="table table-striped">
+              <thead>
+                <!-- <tr bgcolor="#006DA6">
+                    <td colspan="8"><center><label><font color="white">Netfpga Status</font></label></center></td>
+                </tr> -->
+                <tr>
+                    <th>Node</th>
+                    <th>Timestamp</th>
+                    <th>Inport</th>
+                    <th>Src_MAC</th>
+                    <th>Outport</th>
+                    <th>Dst_MAC</th>
+                    <th>packet_count</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if(data.length){ 
+                  for(var i = 0;i < data.length;i++) { %>
+                    <tr>
+                      <td><%=data[i].zone%></td>
+                      <td><%=data[i].timestamp%></td>
+                      <td><%=data[i].in_port1%></td>
+                      <td><%=data[i].dl_dest1%></td>
+                      <td><%=data[i].output1%></td>
+                      <td><%=data[i].dl_dest2%></td>
+                      <td><%=data[i].packet%></td>
+                    </tr>
+                  <% }
+                } else { %>
+                  <tr>
+                    <td colspan="6"><center>No User Requested</center></td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div> <!-- End of Netfpga status -->
+
+          <div id="log_connected" class="tab-pane fade">
+            <table id="log_cnt" class="table table-striped">
+              <thead>
+                <!-- <tr bgcolor="#006DA6">
+                    <td colspan="9"><center><label><font color="white">Log_Node_Connected</font></label></center></td>
+                </tr> -->
+                <tr>
+                  <th>Node</th>
+                  <th>Status</th>
+                  <th>Update</th>
+                  <th>Duration</th>
+                  <th>Src_Mac</th>
+                  <th>In_port</th>
+                  <th>Dst_Mac</th>
+                  <th>Out_port</th>
+                  <th>Packet_Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if(logs_node.length){ 
+                  for(var i = 0;i < logs_node.length;i++) { %>
+                    <tr>
+                      <td><%=logs_node[i].zone%></td>
+                      <td><%=logs_node[i].statuss%></td>
+                      <td><%=logs_node[i].start_time%></td>
+                      <td><%=logs_node[i].duration_time%></td>
+                      <td><%=logs_node[i].src_mac%></td>
+                      <td><%=logs_node[i].in_port%></td>
+                      <td><%=logs_node[i].dest_mac%></td>
+                      <td><%=logs_node[i].out_port%></td>
+                      <td><%=logs_node[i].packet_count%></td>
+                    </tr>
+                  <% }
+                } else { %>
+                  <tr>
+                    <td colspan="6"><center>No User Requested</center></td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div> <!-- End of log_connected -->
+
+          <div id="nagios_status" class="tab-pane fade">
+            <table id="nagios" class="table table-striped">
+              <thead>
+                <!-- <tr bgcolor="#006DA6">
+                    <td colspan="8"><center><label><font color="white">Nagios Status</font></label></center></td>
+                </tr> -->
+                <tr>
+                  <th>Hostname</th>
+                  <th>Timestamp</th>
+                  <th>Service</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if(nagios.length){ 
+                  for(var i = 0;i < nagios.length;i++) { %>
+                    <tr>
+                      <td><%=nagios[i].zone%></td>
+                      <td><%=nagios[i].timestamp%></td>
+                      <td><%=nagios[i].service%></td>
+                      <td><%=nagios[i].statuss%></td>
+                    </tr>
+                  <% }
+                } else { %>
+                  <tr>
+                    <td colspan="3">No user</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div> <!-- End of nagios_status -->
+
+          <div id="log_netfpga" class="tab-pane fade">
+            <table id="log_Netfpga" class="table table-striped">
+              <thead>
+                <!-- <tr bgcolor="#006DA6">
+                    <td colspan="8"><center><label><font color="white">Log_Netfpga Status</font></label></center></td>
+                </tr> -->
+                <tr>
+                  <th>Node</th>
+                  <th>Timestamp</th>
+                  <th>Inport</th>
+                  <th>Src_MAC</th>
+                  <th>Outport</th>
+                  <th>Dst_MAC</th>
+                  <th>packet_count</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if(logs_netfpga.length){ 
+                  for(var i = 0;i < logs_netfpga.length;i++) { %>
+                    <tr>
+                      <td><%=logs_netfpga[i].zone%></td>
+                      <td><%=logs_netfpga[i].timestamp%></td>
+                      <td><%=logs_netfpga[i].in_port1%></td>
+                      <td><%=logs_netfpga[i].dl_dest1%></td>
+                      <td><%=logs_netfpga[i].output1%></td>
+                      <td><%=logs_netfpga[i].dl_dest2%></td>
+                      <td><%=logs_netfpga[i].packet%></td>
+                    </tr>
+                  <% }
+                } else { %>
+                  <tr>
+                    <td colspan="6"><center>No User Requested</center></td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div> <!-- End of log_netfpga -->
+
+          <div id="Log_nagios" class="tab-pane fade">
+            <table id="log_nagios" class="table table-striped">
+              <thead>
+                  <!-- <tr bgcolor="#006DA6">
+                    <td colspan="8"><center><label><font color="white">Log_Nagios Status</font></label></center></td>
+                  </tr> -->
+                  <tr>
+                    <th>Hostname</th>
+                    <th>Timestamp</th>
+                    <th>Service</th>
+                    <th>Status</th>
+                  </tr>
+              </thead>
+              <tbody>
+                <% if(logs_nagios.length){ 
+                  for(var i = 0;i < logs_nagios.length;i++) { %>
+                    <tr>
+                      <td><%=logs_nagios[i].zone%></td>
+                      <td><%=logs_nagios[i].timestamp%></td>
+                      <td><%=logs_nagios[i].service%></td>
+                      <td><%=logs_nagios[i].statuss%></td>
+                    </tr>
+                  <% }
+                } else { %>
+                  <tr>
+                    <td colspan="6"><center>No User Requested</center></td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div> <!-- End of Log_nagios -->
+
+        </div> <!-- tabcontent -->
+      </div> <!-- col-md-8ss -->
+      <div class="col-md-2">
       </div>
     </div>
-      <% }
-    }%>
-</html>
+  </div>
+</div>
+
+<br><br>
+
+<footer id="footer">
+  <div class="container">
+    <div class="row">
+      <%include ./footer %>
+    </div>
+  </div>
+</footer><!--/#footer-->
+
+<script type="text/javascript">
+  $(document).ready(function($) {
+    $('#mytable').DataTable( {
+        "pagingType": "full_numbers"
+    } );
+    $('#log_cnt').DataTable( {
+        "pagingType": "full_numbers"
+    } );
+    $('#log_Netfpga').DataTable( {
+        "pagingType": "full_numbers"
+    } );
+    $('#log_nagios').DataTable( {
+        "pagingType": "full_numbers"
+    } );    
+    $('#netfpga').DataTable( {
+        "pagingType": "full_numbers"
+    } );
+    $('#nagios').DataTable( {
+        "pagingType": "full_numbers"
+    } );
+  } );
+</script>
+

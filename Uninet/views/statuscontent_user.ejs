@@ -1,107 +1,97 @@
-<!---------------------------------------------------Status content Member and Guest------------------------------------------------>
-<!doctype html>
-<html>
-<head>
-    <title>Status</title>
-    <link rel="stylesheet" href="lib/uni.css">
-    <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script><!-- load bootstrap css -->
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
-    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
-    
-    <script type="text/javascript">
-      $(document).ready(function($) {
-        console.log('1111111111111111');
-        $('#mytable').DataTable( {
-            "pagingType": "full_numbers"
-        } );
-        
-      } );
-    </script>
-</head>
-<body style="margin: 0; border: 0; display">
-
-    <div id="contenttext"> 
-      <div style="margin:30px">
-      <table id="mytable" class="table table-striped">
-   <thead>
-      <tr>
-        <th>ID</th>
-        <th>Node Name</th>
-        <th>Status</th>
-	      <th>Update</th>
-	     <th>Duration</th>
-      </tr>
-    </thead>
-    <body>
-      <% if(status_user.length){ 
-                                
-                 for(var i = 0;i < status_user.length;i++) { %>
-      <tr>
-        <td><%=status_user[i].id%></td>
-        <td><%=status_user[i].zone%></td>
-        <td><% if(status_user[i].statuss === "Offline") {%>
-                         <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#modalOffline">Offline</button>
-       <% }if(status_user[i].statuss === "Online") {%>
-                         <button type="button" class="btn btn-success btn-xs" data-toggle="modal" href="#modalOnline<%=status_user[i].id%>" >Online</button>
-       <%}%></td>
-  <td><%=status_user[i].start_time%></td>
-  <td><%=status_user[i].duration_time%></td>
-      </tr>                   
-
-         <% }
-            
-             }else{ %>
-                 <tr>
-                    <td colspan="6"><center>No User Requested</center></td>
-                 </tr>
-            <% } %>
-    </body>
- 
-</table>
-      </div>
-</div>
-</body>
-  <% if(status_user.length){           
-    for(var i = 0;i < status_user.length;i++) { %>
-    <div class="modal fade" id="modalOnline<%=status_user[i].id%>" role="dialog">
-      <div class="modal-dialog">  
-      <!-- Modal content-->
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>Detail</h3>
-          </div>
-            <div class="modal-body"> 
-              <table class="table table-condensed">
-                <thead>
-                     <tr>
-                        <th>Src Mac</th>
-                        <th>Dest Mac</th>
-                        <th>Inport</th>
-                        <th>Outport</th>
-                        <th>Packet Count</th>
-                      </tr>
-                  </thead>
-                    <tbody >
-                        <tr>
-                          <td><%=status_user[i].src_mac%></td>
-                          <td><%=status_user[i].dest_mac%></td>
-                          <td><%=status_user[i].in_port%></td>
-                          <td><%=status_user[i].out_port%></td>
-                          <td><%=status_user[i].packet_count%></td>
-                        </tr>                   
-          </tbody>
-      </table>
-            </div>
-          <div class="modal-footer">
-             <button type="button" class="btn btn-danger btn-md" data-dismiss="modal">Cancel</button>
+  <header id="header">
+    <nav id="main-menu" class="navbar navbar-default navbar-fixed-top" role="banner">
+      <div class="container">
+        <div class="navbar-header">          
+          <a class="navbar-brand" href="/"><img src="uninet_navbar.gif" style="display:inline-block; height:60px" alt="logo">&nbsp&nbsp&nbsp
+          <font>UniNet Express Lane Services</font></a>
+        </div>
+        <% if(!req.isAuthenticated()) { %>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="/signup"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+            <li><a href="#" data-toggle="modal" data-target="#login-modal"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+          </ul>
+        <% } else { %>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="/profile"> Signed in as:  <%= user.username %></a></li>
+            <li><a href="/signout"><span class="glyphicon glyphicon-user"></span> Sign Out</a></li>
+          </ul>
+        <% }%>
+      </div><!--/.container-->      
+    </nav>
+    <% if(!req.isAuthenticated()) { %>
+      <div class="modal fade" id="login-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+            <div class="modal-dialog">
+              <div class="loginmodal-container">
+                <h2><center><b>Sign in</b></center></h2><br>
+                <form action="/signin" method="post">
+                  <input type="text" name="username" id="username" placeholder="Username" required="true" autofocus>
+                  <input type="password" name="password" id="password" placeholder="Password" required="true">
+                  <font size="10px"><b><input type="submit" name="signin" id="signin" class="btn btn-primary btn-lg" value="Sign In" style="margin-top: 5px"></b></font>
+                </form>
+                <div class="login-help" style="font-size: 16px">
+                  <a href="/signup">Register</a> - <a href="/repass">Forgot Password</a>
+                </div>
+              </div>
           </div>
         </div>
+      <% } %> <!-- IF isMember => BLANK_MENU -->
+  </header>
+
+  <section id="status">
+    <div id="container"> 
+      <div class="section-header">
+          <h2 class="section-title text-center wow fadeInDown">Status</h2>
+          <p class="text-center wow fadeInDown">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut <br> et dolore magna aliqua. Ut enim ad minim veniam</p>
+      </div>
+      <div class="row text-center">
+        <% if(status_user.length){ %>
+          <!-- BEGIN: Dummy Zone -->
+          <div class="col-md-1 col-md-4 col-xs-6"></div>
+          <div class="col-md-1 col-md-4 col-xs-6"></div>
+          <!-- END: Dummy Zone -->
+          <% for(var i = 0;i < status_user.length;i++) { %>
+          <div class="col-md-1 col-md-4 col-xs-6">
+            <div class="wow fadeInUp" data-wow-duration="400ms" data-wow-delay="0ms">
+              <p> <%=status_user[i].id%> </p>              
+                <% if(status_user[i].statuss === "Offline") {%>
+                  <div class="icon-circle" style="border-color: red">
+                    <i class="fa fa-close status-icon" style="margin-top: 20px"></i>
+                  </div>
+                  <h3><%=status_user[i].zone%></h3>
+                <% }if(status_user[i].statuss === "Online") {%>
+                  <div class="icon-circle" style="border-color: green">
+                    <i class="fa fa fa-check status-icon"></i>
+                  </div>
+                  <h3><%=status_user[i].zone%></h3>
+                <%}%>
+              <p> <%=status_user[i].start_time%> </p>
+            </div>
+          </div>
+          <% } %>
+          <!-- BEGIN: Dummy Zone -->
+          <div class="col-md-1 col-md-4 col-xs-6">
+            <div class="wow fadeInUp" data-wow-duration="400ms" data-wow-delay="0ms">
+              <p> More </p>
+              <div class="icon-circle" style="width: 100%">
+                  <i class="fa fa-plus status-icon" style="margin-top: 20px"></i>
+              </div>
+              <h3>Coming Soon...</h3>
+            </div>
+          </div>
+          <div class="col-md-1 col-md-4 col-xs-6"></div>
+          <div class="col-md-1 col-md-4 col-xs-6"></div>
+          <!-- END: Dummy Zone -->
+        <% } else { %>
+            <center>No User Requested</center>
+        <% } %>    
       </div>
     </div>
-      <% }
-    }%>
-</html>
+  </section>
+
+  <!-- <footer id="footer">
+    <div class="container">
+      <div class="row">
+        <%include ./footer %>
+      </div>
+    </div>
+  </footer> --><!--/#footer-->

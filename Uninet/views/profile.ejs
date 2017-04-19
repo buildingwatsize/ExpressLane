@@ -1,152 +1,220 @@
 <!---------------------------------------------------Member Profile------------------------------------------------>
-<!doctype html>
-<html>
-  <head>
-    <title>Profile</title>
-    <link rel="stylesheet" href="lib/uni.css">
-    <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script><!-- load bootstrap css -->
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
-  </head>
-  <body style="background-color: #006DA6;">
-    <div class="container-fluid">
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title> UniNet Express Lane Services </title>
+    <!-- core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">    
+    <link href="css/animate.min.css" rel="stylesheet">
+    <link href="css/owl.carousel.css" rel="stylesheet">
+    <link href="css/owl.transitions.css" rel="stylesheet">
+    <link href="css/prettyPhoto.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+    <link href="css/responsive.css" rel="stylesheet">
+    <!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+    <script src="js/respond.min.js"></script>
+    <![endif]-->    
+
+    <!-- Alternative Style -->
+    <!-- <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css"> -->
+
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="http://maps.google.com/maps/api/js?sensor=true"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/mousescroll.js"></script>
+    <script src="js/smoothscroll.js"></script>
+    <script src="js/jquery.prettyPhoto.js"></script>
+    <script src="js/jquery.isotope.min.js"></script>
+    <script src="js/jquery.inview.min.js"></script>
+    <script src="js/wow.min.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- <link rel="shortcut icon" href="images/ico/favicon.ico"> -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+</head><!--/head-->
+<body id="home" class="homepage">
+
+  <header id="header">
+    <nav id="main-menu" class="navbar navbar-default navbar-fixed-top" role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><img src="uninet_navbar.gif" style="display:inline-block; height:60px" alt="logo">&nbsp&nbsp&nbsp
+          <font>UniNet Express Lane Services</font></a>
+        </div>
+        <% include ./menumem %>
+      </div><!--/.container-->
+    </nav>
+  </header>
+
+  <section id="status">
+    <div id="container"> 
+      <div class="section-header">
+        <h2 class="section-title text-center wow fadeInDown">Profile</h2>
+          <p class="text-center wow fadeInDown">ตรวจสอบรายละเอียดส่วนบุคคล</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="cta" class="wow fadeIn">
+    <div class="container">
       <div class="row">
-        <div class="col-xs-12 nopadding">
-          <% include ./base %>
-        </div>
-        <div class="col-xs-12 nopadding">
-          <% include ./menumem %>
-        </div>
-        <div class="col-xs-2 nopadding"  style="min-width:250px;">
-          <%include ./member %>
-        </div>
-        <div class="col-xs-10 nopadding">
-          <div id="contenttext">
-            <div style="margin-top: 0;">
-              <div class="container">
-                <br><br>
-                <h1><strong>Profile<strong></h1><br>
-                <div class="form-group">
-                  <label class="col-sm-2 control-label"> First Name :</label>
-		              <div class="col-sm-2">
-            		    <%=user.NameE%>
-		              </div>
-                </div><br>
-                <div class="form-group">
-                  <label class="col-sm-2 control-label"> Last Name :</label>
-		              <div class="col-sm-4">
-            		    <%=user.LastNameE%>
-		              </div>
-                </div><br>
-                <div class="form-group">
-                  <label class="col-sm-2 control-label"> Organization :</label>
-                  <div class="col-sm-5">
-                    <% if(user.org === 1) { %>
-                      Chulalongkorn University
-                    <% } %>
-	                  <% if(user.org === 2) { %>
-			                Kasetsart University
-                    <% } %>
-	                  <% if(user.org === 3) { %>
-			                Khon Kean University
-                    <% } %>
-	                  <% if(user.org === 4) { %>
-			                Chiang Mai University
-                    <% } %>
-                    <% if(user.org === 5) { %>
-			                Thaksin University
-                    <% } %>
-	                  <% if(user.org === 6) { %>
-			                King Mongkut's University of Technology Thonburi
-                    <% } %>
-	                  <% if(user.org === 7) { %>
-			                King Mongkut's University of Technology North Bangkok
-                    <% } %>
-	                  <% if(user.org === 8) { %>
-			                Suranaree University of Technology
-                    <% } %>
-                    <% if(user.org === 9) { %>
-			                Thammasat University
-                    <% } %>
-	                  <% if(user.org === 10) { %>
-			                Nakhon Phanom University
-                    <% } %>
-	                  <% if(user.org === 11) { %>
-			                Princess of Naradhiwas University
-                    <% } %>
-	                  <% if(user.org === 12) { %>
-			                Naresuan University
-                    <% } %>
-                    <% if(user.org === 13) { %>
-			                Burapha University
-                    <% } %>
-	                  <% if(user.org === 14) { %>
-			                University of Phayao
-                    <% } %>
-	                  <% if(user.org === 15) { %>
-			                Mahasarakham University
-                    <% } %>
-	                  <% if(user.org === 16) { %>
-			                Mahidol University
-                    <% } %>
-                    <% if(user.org === 17) { %>
-			                Maejo University
-                    <% } %>
-	                  <% if(user.org === 18) { %>
-			                Mae Fah Luang University
-                    <% } %>
-	                  <% if(user.org === 19) { %>
-			                Walailak University
-                    <% } %>
-	                  <% if(user.org === 20) { %>
-			                Srinakharinwirot University
-                    <% } %>
-                    <% if(user.org === 21) { %>
-			                Silpakorn University
-                    <% } %>
-	                  <% if(user.org === 22) { %>
-			                Prince of Songkla University
-                    <% } %>
-	                  <% if(user.org === 23) { %>
-			                Ubon Ratchathani University
-                    <% } %>
-	                  <% if(user.org === 24) { %>
-			                King Mongkut's Institute of Technology Ladkrabang
-                    <% } %> 
-                  </div>
-                </div><br>
-                <div class="form-group">
-                  <label class="col-sm-2 control-label"> Phone number :</label>
-		              <div class="col-sm-3">
-            		    <%=user.phone%>
-		              </div>
-                </div><br>
-                <div class="form-group">
-                  <label class="col-sm-2 control-label"> Email :</label>
-		              <div class="col-sm-3">
-            		    <%=user.email%>
-		              </div>
-              </div><br>
-              <div class="form-group">
-                <label class="col-sm-2 control-label"> Member Type :</label>
-		            <div class="col-sm-3">
-            		  <% if(user.membertype === 0) {%>
-                    Standard Member
-                  <% } %>
-                  <% if(user.membertype === 1) {%>
-                    Premium Member
-                  <% } %>
-		            </div>
-              </div>
+        <div class="col-sm-4">
+          <div class="loginmodal-container" style="margin-top: -10px; max-width: 100%">
+            <h2><center><b>Control Panel</b></center></h2><br>
+            <div class="panel panel-body" style="display: inline-block; width: 100%">
+              <font size="4px">Signed in as:  <%= user.username %></font><br>
+              <b>
+              <a href="/signout" class="btn btn-primary btn-lg"><font color="white"> Sign Out</font></a></b><br>
             </div>
+            <b><font size="4px"><a href="/profile">View Profile</a>
+            <hr>
+            <a href="/repass">Reset Password</a></font>
+            <hr></b>
           </div>
-        </div>
-        <div class="col-xs-12 nopadding">
-          <% include ./footer %>
-        </div>
-  </body>
+        </div> <!-- col-sm-4 -->
+        <div class="col-sm-8">
+          <div class="loginmodal-container" style="margin-top: -10px; max-width: 100%">
+            <h2><label>Profile</label></h2>
+            <table style="width: 100%">
+              <tr>
+                <td style="width: 25%">First Name :</td>
+                <td><input type="text" placeholder="<%=user.NameE%>" disabled/> </td>
+              </tr>
+              <tr>
+                <td>Last Name :</td>
+                <td><input type="text" placeholder="<%=user.LastNameE%>" disabled/> </td>
+              </tr>
+              <tr>
+                <td>Organization :</td>
+                <td><input id="org" type="text" placeholder="" disabled/>
+                </td>
+              </tr>
+              <tr>
+                <td>Phone number :</td>
+                <td><input type="text" placeholder="<%=user.phone%>" disabled/> </td>
+              </tr>
+              <tr>
+                <td>Email Address :</td>
+                <td><input type="text" placeholder="<%=user.email%>" disabled/> </td>
+              </tr>
+              <tr>
+                <td>Member Type :</td>
+                <td><input id="mem_type" type="text" placeholder="<%=user.email%>" disabled/> </td>
+              </tr>
+            </table>
+          </div>
+        </div> <!-- col-sm-8 -->
+      </div>
+    </div>
+  </section>
+
+  <footer id="footer">
+    <div class="container">
+      <div class="row">
+        <%include ./footer %>
+      </div>
+    </div>
+  </footer><!--/#footer-->
+
+  <script type="text/javascript">
+    document.getElementById("org").placeholder = 
+      <% if(user.org === 1) { %>
+        "Chulalongkorn University"
+      <% } %>
+      <% if(user.org === 2) { %>
+        "Kasetsart University"
+      <% } %>
+      <% if(user.org === 3) { %>
+        "Khon Kean University"
+      <% } %>
+      <% if(user.org === 4) { %>
+        "Chiang Mai University"
+      <% } %>
+      <% if(user.org === 5) { %>
+        "Thaksin University"
+      <% } %>
+      <% if(user.org === 6) { %>
+        "King Mongkut's University of Technology Thonburi"
+      <% } %>
+      <% if(user.org === 7) { %>
+        "King Mongkut's University of Technology North Bangkok"
+      <% } %>
+      <% if(user.org === 8) { %>
+        "Suranaree University of Technology"
+      <% } %>
+      <% if(user.org === 9) { %>
+        "Thammasat University"
+      <% } %>
+      <% if(user.org === 10) { %>
+        "Nakhon Phanom University"
+      <% } %>
+      <% if(user.org === 11) { %>
+        "Princess of Naradhiwas University"
+      <% } %>
+      <% if(user.org === 12) { %>
+        "Naresuan University"
+      <% } %>
+      <% if(user.org === 13) { %>
+        "Burapha University"
+      <% } %>
+      <% if(user.org === 14) { %>
+        "University of Phayao"
+      <% } %>
+      <% if(user.org === 15) { %>
+        "Mahasarakham University"
+      <% } %>
+      <% if(user.org === 16) { %>
+        "Mahidol University"
+      <% } %>
+      <% if(user.org === 17) { %>
+        "Maejo University"
+      <% } %>
+      <% if(user.org === 18) { %>
+        "Mae Fah Luang University"
+      <% } %>
+      <% if(user.org === 19) { %>
+        "Walailak University"
+      <% } %>
+      <% if(user.org === 20) { %>
+        "Srinakharinwirot University"
+      <% } %>
+      <% if(user.org === 21) { %>
+        "Silpakorn University"
+      <% } %>
+      <% if(user.org === 22) { %>
+        "Prince of Songkla University"
+      <% } %>
+      <% if(user.org === 23) { %>
+        "Ubon Ratchathani University"
+      <% } %>
+      <% if(user.org === 24) { %>
+        "King Mongkut's Institute of Technology Ladkrabang"
+      <% } %>;
+
+    document.getElementById("mem_type").placeholder =   
+      <% if(user.membertype === 0) {%>
+        "Standard Member"
+      <% } %>
+      <% if(user.membertype === 1) {%>
+        "Premium Member"
+      <% } %>;
+  </script>
+</body>
 </html>
 
 
