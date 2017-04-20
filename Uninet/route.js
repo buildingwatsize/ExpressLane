@@ -131,11 +131,7 @@ var index = function(req, res, next) {
         req.getConnection(function(err, connection) {
             var query = connection.query("UPDATE User set flag=1 WHERE id = ? ", [user.id], function(rows) {});
             var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, rows) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    console.log(rows);
-                }
+                if (err) { console.log(err); }
                 res.render('index', {
                     title: 'Home',
                     req: req,
@@ -178,17 +174,10 @@ var profile = function(req, res, next) {
         if (user !== undefined) {
             user = user.toJSON();
         }
-        if (user.role === 1) {
-            res.render('profileadmin', {
-                title: 'profileadmin',
-                user: user
-            });
-        } else {
-            res.render('profile', {
-                title: 'profile',
-                user: user
-            });
-        }
+        res.render('profile', {
+            title: 'profile',
+            user: user
+        });
     }
 };
 //reset password render
