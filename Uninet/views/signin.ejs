@@ -13,6 +13,9 @@
   <div class="col-sm-6">
       <div class="loginmodal-container">
         <h2><center><b>Please Sign in</b></center></h2><br>
+        <% if (typeof(errorMessage) !== 'undefined') { %>
+          <div id="alert" class="alert alert-danger"><strong><%= errorMessage %></strong></div>
+        <% } %>
         <form action="/signin" method="post">
           <input type="text" name="username" id="username" placeholder="Username" required="true" autofocus>
           <input type="password" name="password" id="password" placeholder="Password" required="true">

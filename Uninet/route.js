@@ -114,12 +114,12 @@ var check = function(req, res) {
 var index = function(req, res, next) {
     if (!req.isAuthenticated()) {
         req.getConnection(function(err, connection) {
-            var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, rows) {
-                if (err) console.log(err);
+            var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
+                if (err) { console.log(err); }
                 res.render('index', {
                     title: 'Home',
                     req: req,
-                    status_user: rows
+                    status_user: status_user
                 });
             });
         });
@@ -130,13 +130,13 @@ var index = function(req, res, next) {
         }
         req.getConnection(function(err, connection) {
             var query = connection.query("UPDATE User set flag=1 WHERE id = ? ", [user.id], function(rows) {});
-            var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, rows) {
+            var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
                 if (err) { console.log(err); }
                 res.render('index', {
                     title: 'Home',
                     req: req,
                     user: user,
-                    status_user: rows
+                    status_user: status_user
                 });
             });
         });
@@ -182,22 +182,15 @@ var profile = function(req, res, next) {
 };
 //reset password render
 var repass = function(req, res, next) {
-    if (!req.isAuthenticated()) {
-        res.render('repass', {
-            title: 'Reset Password',
-            req: req
-        });
-    } else {
-        var user = req.user;
-        if (user !== undefined) {
-            user = user.toJSON();
-        }
-        res.render('repass', {
-            title: 'Reset Password',
-            req: req,
-            user: user
-        });
+    var user = req.user;
+    if (user !== undefined) {
+        user = user.toJSON();
     }
+    res.render('repass', {
+        title: 'Reset Password',
+        req: req,
+        user: user
+    });
 };
 //reset password submit
 var repasspost = function(req, res, next) {
@@ -333,12 +326,12 @@ var statusPost = function(req, res, next) {
 var status = function(req, res, next) {
     if (!req.isAuthenticated()) {
         req.getConnection(function(err, connection) {
-            var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status Order By id ', function(err, rows) {
+            var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status Order By id ', function(err, status_user) {
                 if (err) console.log("Error Selecting : %s ", err);
                 res.render('status', {
                     page_title: "status",
                     req: req,
-                    status_user: rows
+                    status_user: status_user
                 });
             });
             //console.log(query.sql);
@@ -396,13 +389,13 @@ var status = function(req, res, next) {
                 user = user.toJSON();
             }
             req.getConnection(function(err, connection) {
-                var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, rows) {
+                var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
                     if (err) console.log("Error Selecting : %s ", err);
                     res.render('status', {
                         page_title: "status",
                         user: user,
                         req: req,
-                        status_user: rows
+                        status_user: status_user
                     });
                 });
                 //console.log(query.sql);
@@ -1526,14 +1519,6 @@ var delete_active = function(req, res) {
     }
 };
 // sign in
-// GET
-var signIn = function(req, res, next) {
-    if (req.isAuthenticated()) res.redirect('/memberindex');
-    res.render('signin', {
-        title: 'Sign In'
-    });
-};
-// sign in
 // POST
 var signInPost = function(req, res, next) {
     passport.authenticate('local', {
@@ -1541,25 +1526,43 @@ var signInPost = function(req, res, next) {
         failureRedirect: '/'
     }, function(err, user, info) {
         if (err) {
-            return res.render('index', {
-                title: 'Sign In',
-                req: req,
-                errorMessage: err.message
+            return req.getConnection(function(err, connection) {
+                var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
+                    if (err) { console.log(err); }
+                    res.render('index', {
+                        title: 'Home',
+                        req: req,
+                        status_user: status_user,
+                        errorMessage: err.message
+                    });
+                });
             });
         }
         if (!user) {
-            return res.render('index', {
-                title: 'Sign In',
-                req: req,
-                errorMessage: info.message
+            return req.getConnection(function(err, connection) {
+                var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
+                    if (err) { console.log(err); }
+                    res.render('index', {
+                        title: 'Home',
+                        req: req,
+                        status_user: status_user,
+                        errorMessage: info.message
+                    });
+                });
             });
         }
         return req.logIn(user, function(err) {
             if (err) {
-                return res.render('index', {
-                    title: 'Sign In',
-                    req: req,
-                    errorMessage: err.message
+                return req.getConnection(function(err, connection) {
+                    var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
+                        if (err) { console.log(err); }
+                        res.render('index', {
+                            title: 'Home',
+                            req: req,
+                            status_user: status_user,
+                            errorMessage: err.message
+                        });
+                    });
                 });
             } else {
                 user.flag = 1;
@@ -1930,8 +1933,6 @@ module.exports.delete_approve = delete_approve;
 module.exports.delete_active = delete_active;
 module.exports.addService = addService;
 // sigin in
-// GET
-module.exports.signIn = signIn;
 // POST
 module.exports.signInPost = signInPost;
 // sign up
