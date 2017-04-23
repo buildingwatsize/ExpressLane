@@ -9,7 +9,7 @@ created for version control backup
 
 * git add xxxxx
 * git commit -m "xxxxx"
-* git remote add origin git@github.com:buildingwatsize/ExpressLane.git
+* git remote add origin https://buildingwatsize@github.com/buildingwatsize/ExpressLane.git
 * git push -u origin master
 
 ***
