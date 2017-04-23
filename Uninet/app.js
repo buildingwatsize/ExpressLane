@@ -112,18 +112,16 @@ app.post('/delete_rest_service', route.delete_rest_service);
 app.get('/serviceac/cancel/:id', route.ccServiceac);
 //service management
 app.get('/servicemanage', route.servicemanage, route.check);
-app.post('/servicemanage', route.addService, route.check);
+app.post('/addService', route.addService, route.check);
 app.get('/servicemanage/delete/:id', route.delete_service);
 app.get('/servicemanage/deleteactive/:id', route.delete_active);
 app.get('/servicemanage/deleteapprove/:id', route.delete_approve);
 app.get('/servicemanage/accept/:id', route.accept_service);
 app.post('/servicemanage/accept/:id', route.accept_service);
-app.get('/servicemanage/edit/:id', route.edit);
 app.post('/servicemanage/edit/:id', route.saveedit_service);
 //user managment
 app.get('/user', route.user);
 app.get('/user/accept/:id', route.accept);
-app.get('/user/edit/:id', route.edit);
 app.post('/user/edit/:id', route.saveedit);
 app.get('/user/delete/:id', route.delete_user);
 app.get('/user/cancel/:id', route.cancel_user);
