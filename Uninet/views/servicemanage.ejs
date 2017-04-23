@@ -1,6 +1,6 @@
 <!doctype html>
+<!-- Service Manage Page -->
 <html lang="en">
-<!-- Sign Up Page -->
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,23 +78,7 @@
         return false;
       }   
     }
-  </script>
-
-  <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-  <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
-  <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
-
-  <script type="text/javascript">
-    $(function() {
-        $('input[name="daterange"]').daterangepicker({
-            timePicker: true,
-            timePickerIncrement: 30,
-            locale: {
-                format: 'YYYY/MM/DD hh:mm'
-            }
-        });
-    });
-  </script>
+  </script>  
 </head>
 <body id="home" class="homepage">
 
@@ -552,15 +536,15 @@
             </div>
 
             <div class="form-group">
-                <label>Duration of services</label>
-                <div class="input-daterange" id="datePickerNewXL">
-                  <input type="text" style="text-align: center;"name="startTimeByAdmin" id="startTimeByAdmin" placeholder="YYYY/MM/DD hh:mm:ss" size="17" required="true">
-                  &nbsp;to&nbsp;
-                  <input type="text" style="text-align: center;" name="endTimeByAdmin" id="endTimeByAdmin" placeholder="YYYY/MM/DD hh:mm:ss" size="17" required="true">
-                  &nbsp;&nbsp;<span class="fa fa-calendar"></span>
-                </div>
-              </div> 
-            </div>
+              <label>Duration of services</label>
+              <div class="input-daterange" id="datePickerNewXL">
+                <input type="text" style="text-align: center;" name="startTimeByAdmin" id="startTimeByAdmin" placeholder="YYYY/MM/DD hh:mm:ss" size="17" required="true">
+                &nbsp;to&nbsp;
+                <input type="text" style="text-align: center;" name="endTimeByAdmin" id="endTimeByAdmin" placeholder="YYYY/MM/DD hh:mm:ss" size="17" required="true">
+                &nbsp;&nbsp;<span class="fa fa-calendar"></span>
+              </div>
+            </div> 
+          </div>
 
           <div class="modal-footer">
             <button type="submit" class="btn btn-success btn-md" value="addService" >Submit</button> 
@@ -580,15 +564,11 @@
       </div>
     </div>
   </footer><!--/#footer-->
+  
+  <link href="css/daterangepicker.css" rel="stylesheet">
 
-  <!-- Include Required Prerequisites -->
-  <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
-  <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-  <!-- Include Date Range Picker -->
-  <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
- 
-  <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>  
-
+  <script src="js/moment.min.js"></script>
+  <script src="js/daterangepicker.js"></script>
   <script type="text/javascript">
     var startTime;
     var endTime;

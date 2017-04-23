@@ -571,15 +571,13 @@ var addServiceac = function(req, res, next) {
   var user = req.user;
 
   req.getConnection(function(err, connection) {
-        //var user_email = user.email;
-        //var user_username = user.username;
         var query = connection.query("INSERT INTO ServiceRequests set user = ? ", [user.id], function(err, rows) {
-          if (err) console.log("Error inserting : %s ", err);
+          if (err) console.log("Error inserting ServiceRequests: %s ", err);
           var query = connection.query("INSERT INTO ServiceActivities (sid) SELECT sid From ServiceRequests WHERE user = ? Order By ServiceRequests.sid Desc LIMIT 1", [user.id], function(err, a) {
                 //console.log(a);
-                if (err) console.log("Error inserting : %s ", err);
+                if (err) console.log("Error inserting ServiceActivities: %s ", err);
                 var query = connection.query("SELECT said From ServiceActivities Order By said Desc LIMIT 1", function(err, ss) {
-                  if (err) console.log("Error inserting : %s ", err);
+                  if (err) console.log("Error selecting ServiceActivities: %s ", err);
                   var str = JSON.stringify(ss);
                   ss1 = JSON.parse(str);
                   var mac1 = input.resourceString1.toString().toLowerCase();
@@ -639,9 +637,9 @@ var addServiceac = function(req, res, next) {
                     });
                   });
                 });
-});
-});
-});
+      });
+    });
+  });
 };
 
 //user management
