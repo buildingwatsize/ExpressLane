@@ -78,6 +78,14 @@
         form.IP2.focus();
         return false;  
       }
+
+      if(document.getElementById('resourceString1').value === document.getElementById('resourceString2').value) { 
+        document.getElementById("alert").className = "alert alert-danger";
+        document.getElementById('alert').innerHTML = "<strong>Unable to choose the same node. Try again?</strong>";
+        return false;
+      } else {
+        document.getElementById('alert').innerHTML = "";
+      }
     }
   </script>
 </head><!--/head-->
@@ -309,7 +317,7 @@
             <div class="container">
               <div class="row">
                 <div class="dropdown col-xs-3">
-                  <select class="form-control" name="resourceString1" id="resourceString1" onclick=showFn1()>
+                  <select class="form-control" name="resourceString1" id="resourceString1" onclick="showFn1()">
                     <option id="src_select" disabled="disabled"><- Please Select Item -></option>
                     <option value="00:13:F7:D1:D2:35">BSE(KMUTNB)</option>
                     <option value="00:26:5A:7C:03:AF">PYT1(Uninet)</option>
@@ -334,7 +342,7 @@
             <div class="container">
               <div class="row">
                 <div class="dropdown col-xs-3">
-                  <select class="form-control" name="resourceString2" id="resourceString2" onclick=showFn2()>
+                  <select class="form-control" name="resourceString2" id="resourceString2" onclick="showFn2()">
                     <option id="dest_select" disabled="disabled"><- Please Select Item -></option>
                     <option value="00:13:F7:D1:D2:35">BSE(KMUTNB)</option>
                     <option value="00:26:5A:7C:03:AF">PYT1(Uninet)</option>
@@ -360,10 +368,10 @@
               <div class="row">
                 <div class="col-xs-12">
                   <div class="input-daterange" id="datePickerNewXL">
-                    <input type="text" style="text-align: center;" class="datePicker" name="startTime" id="startTime" placeholder="YYYY/MM/DD hh:mm" size="17" >
+                    <input type="text" style="text-align: center;" class="datePicker" name="startTime" id="startTime" placeholder="YYYY/MM/DD hh:mm" size="17" required="true">
                     &nbsp;to&nbsp;
-                    <input type="text" style="text-align: center;" class="datePicker" name="endTime" id="endTime" placeholder="YYYY/MM/DD hh:mm" size="17">
-                    <span class="fa fa-calendar"></span>
+                    <input type="text" style="text-align: center;" class="datePicker" name="endTime" id="endTime" placeholder="YYYY/MM/DD hh:mm" size="17" required="true">
+                    &nbsp;&nbsp;<span class="fa fa-calendar btn-default"></span>
                   </div>
                 </div>
               </div>
@@ -378,39 +386,7 @@
         </form>
       </div><!--class="modal-content"-->
     </div><!--class="modal-dialog" role="document"-->
-  </div> <!-- id="ReserveModal" -->
-
-  <link href="css/daterangepicker.css" rel="stylesheet">
-
-  <script src="js/moment.min.js"></script>
-  <script src="js/daterangepicker.js"></script>
-  <script type="text/javascript">
-    var startTime;
-    var endTime;
-    $(document).ready(function($) {      
-      $('#my_reserve').dataTable({
-          "pagingType": "full_numbers"
-      });
-      $('#statetable').dataTable({
-          "pagingType": "full_numbers"
-      });
-      $('#historytable').dataTable({
-          "pagingType": "full_numbers"
-      });
-      $('#datePickerNewXL').daterangepicker({
-        timePicker: true,
-        timePicker24Hour: true,
-          locale: {
-              format: 'YYYY/MM/DD HH:mm:ss'
-          }
-        }, function(start, end) {
-          $('#reportrange span').html(start.format('YYYY/MM/DD HH:mm:ss') + ' - ' + end.format('YYYY/MM/DD HH:mm:ss'));
-          document.getElementById("startTime").value = start.format('YYYY/MM/DD HH:mm:ss');
-          document.getElementById("endTime").value = end.format('YYYY/MM/DD HH:mm:ss');
-        }
-      );  
-    });
-  </script>
+  </div> <!-- id="ReserveModal" --> 
 
   <script type="text/javascript">
     var Mac_table = [ 
@@ -458,35 +434,35 @@
         }];  
 
     function showFn1() {
-        document.getElementById("show_src").innerHTML = document.getElementById("resourceString1").value;
-        var mti = 0; //Mac table index
-        while (mti < Mac_table.length){
-          if(Mac_table[mti].mac == document.getElementById("resourceString1").value){
-            document.getElementById("show_srcip").innerHTML = Mac_table[mti].ip; //display
-            document.getElementById("IP1").value = Mac_table[mti].ip; //pass value
-            mti = 0;
-            break;
-          }
-          mti = mti + 1;
-        }  
+      document.getElementById("show_src").innerHTML = document.getElementById("resourceString1").value;
+      var mti = 0; //Mac table index
+      while (mti < Mac_table.length){
+        if(Mac_table[mti].mac == document.getElementById("resourceString1").value){
+          document.getElementById("show_srcip").innerHTML = Mac_table[mti].ip; //display
+          document.getElementById("IP1").value = Mac_table[mti].ip; //pass value
+          mti = 0;
+          break;
+        }
+        mti = mti + 1;
+      }        
     }
     function showFn2() {
-        document.getElementById("show_dest").innerHTML = document.getElementById("resourceString2").value;
-        var mti = 0; //Mac table index
-        while (mti < Mac_table.length){
-          if(Mac_table[mti].mac == document.getElementById("resourceString2").value){
-            document.getElementById("show_desip").innerHTML = Mac_table[mti].ip; //display
-            document.getElementById("IP2").value = Mac_table[mti].ip; //pass value
-            mti = 0;
-            break;
-          }
-          mti = mti + 1;
-        }  
+      document.getElementById("show_dest").innerHTML = document.getElementById("resourceString2").value;
+      var mti = 0; //Mac table index
+      while (mti < Mac_table.length){
+        if(Mac_table[mti].mac == document.getElementById("resourceString2").value){
+          document.getElementById("show_desip").innerHTML = Mac_table[mti].ip; //display
+          document.getElementById("IP2").value = Mac_table[mti].ip; //pass value
+          mti = 0;
+          break;
+        }
+        mti = mti + 1;
+      }  
     }
-  </script>
-  
-  <script type="text/javascript">
-    $('#resourceString1').on('change', function(){
+  </script> 
+
+  <script>
+    $('#resourceString1').on('click', function(){
       $("#resourceString2 option").each(function(){
         if ($(this).text() == $('#resourceString1 option:selected').text()) {
           $(this).attr('disabled',true);            
@@ -494,9 +470,10 @@
         else {
           $(this).attr('disabled',false);
         }
+        $('#src_select').attr('disabled',true);
       });
     });
-    $('#resourceString2').on('change', function(){
+    $('#resourceString2').on('click', function(){
       $("#resourceString1 option").each(function(){
         if ($(this).text() == $('#resourceString2 option:selected').text()) {
           $(this).attr('disabled',true);
@@ -504,10 +481,42 @@
         else {
           $(this).attr('disabled',false);
         }
+        $('#dest_select').attr('disabled',true);
       });
     });
-    document.getElementById("src_select").attr('disabled',true);
-    document.getElementById("dest_select").attr('disabled',true);
   </script>
+
+  <link href="css/daterangepicker.css" rel="stylesheet">
+
+  <script src="js/moment.min.js"></script>
+  <script src="js/daterangepicker.js"></script>
+  <script type="text/javascript">
+    var startTime;
+    var endTime;
+    $(document).ready(function($) {      
+      $('#my_reserve').dataTable({
+          "pagingType": "full_numbers"
+      });
+      $('#statetable').dataTable({
+          "pagingType": "full_numbers"
+      });
+      $('#historytable').dataTable({
+          "pagingType": "full_numbers"
+      });
+      $('#datePickerNewXL').daterangepicker({
+        timePicker: true,
+        timePicker24Hour: true,
+          locale: {
+              format: 'YYYY/MM/DD HH:mm:ss'
+          }
+        }, function(start, end) {
+          $('#reportrange span').html(start.format('YYYY/MM/DD HH:mm:ss') + ' - ' + end.format('YYYY/MM/DD HH:mm:ss'));
+          document.getElementById("startTime").value = start.format('YYYY/MM/DD HH:mm:ss');
+          document.getElementById("endTime").value = end.format('YYYY/MM/DD HH:mm:ss');
+        }
+      );  
+    });
+  </script>
+
 </body>
 </html>
