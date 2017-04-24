@@ -1,7 +1,8 @@
-// route.js
-// Contract UniNet Express Lane Services team
-// Akarasate Waiyaroj(a.waiyaroj@gmail.com)
-//////////////////////////////////////////////////////////////////////////////////////////
+// Title: UniNet Express Lane Services
+// Developer: Chinnawat Chimdee (chinnawat.cpre@gmail.com)
+// Original Source: Akarasate Waiyaroj (a.waiyaroj@gmail.com)
+// Last Update: April 2017
+
 // module list
 var passport = require('passport');
 var bcrypt = require('bcrypt-nodejs');
@@ -14,6 +15,8 @@ var connection = mysql.createConnection({ //database setting
     password: 'root',
     database: 'UniNetExpressLane' //database name
   });
+connection.connect();
+
 var queryString = 'SELECT Text FROM EmailTemplates'; // query template SQL data
 var nodemailer = require('nodemailer'); //nodemailler
 var transporter = nodemailer.createTransport({
@@ -23,93 +26,81 @@ var transporter = nodemailer.createTransport({
     pass: 'vk0kipN;ik'
   }
 });
+
 //check function to change service state
 var check = function(req, res) {
-    //request timeout
-    var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said INNER JOIN ServiceRequests ON ServiceRequests.sid = ServiceActivities.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE actType = 0", function(err, servicetime) {
+  //request timeout
+  var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said INNER JOIN ServiceRequests ON ServiceRequests.sid = ServiceActivities.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE actType = 0", function(err, servicetime) {
+    if (err) console.log("Error selecting ServiceActivities [01]: %s", err);
+    else { 
       for (i = 0; i < servicetime.length; i++) {
-        console.log(servicetime[i].endTime + "//" + servicetime[i].username + "(" + servicetime[i].email + ")");
+        console.log(servicetime[i].endTime + "//" + servicetime[i].username + " (" + servicetime[i].email + ")");
         cron.scheduleJob(servicetime[i].endTime, function() {
           var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said, 3 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 0 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err) {
-            var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=3 WHERE actType = 0 and endTime = NOW()", function(err) {
-              if (err) {
-                console.log("Error Updating : %s ", err);
-              } else {
-                console.log(new Date(), "update");
-                            /*
-                            //Email section
-                            console.log('Send email to '+ servicetime[i].username +"("+servicetime[i].email+")");
-                            var emailtemp = connection.query('SELECT Text FROM Emailtext WHERE id = 7', function(err, result){ //Query data from database
-                                if(!err) {
-                                    //connection.release();
-                                    var temp = result[0].Text;
-
-                                    // send email notification
-                                    transporter.sendMail({
-                                        form: 'Uninet Express Lane Services Team',
-                                        to: servicetime[i].email,
-                                        subject: 'Uninet Express Lane',
-                                        html:'<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear '+ servicetime[i].NameE+' '+ servicetime[i].LastNameE+', <br><br>'+temp+'<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                                    });
-
-                                    var logdata = {
-                                        Sender      : "Auto Sender",
-                                        Reciver     : servicetime[i].username +"("+servicetime[i].email+")",
-                                        emailData   : temp
-                                    };
-
-                                    //save logs to database
-                                    var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows){
-                                        if(err){
-                                            console.log("Error when query logs : %s", err);
-                                        } else {
-                                            console.log("Log saved");
-                                        }
-                                    });
-                                    console.log("Email was send ...");
-                                } else {
-                                    console.log("Error query database ...");
-                            }
-                          });*/
-                        }
-                      });
+            if (err) console.log("Error inserting ServiceLogs [01]: %s", err);
+            else {
+              var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=3 WHERE actType = 0 and endTime = NOW()", function(err) {
+                if (err) console.log("Error Updating [01]: %s ", err);
+                else console.log(new Date(), "update");
+              });
+            }
           });
         });
       }
-    });
-    //service active by start time
-    var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 4", function(err, time) {
+    }
+  });
+  //service active by start time
+  var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 4", function(err, time) {
+    if (err) console.log("Error selecting ServiceActivities [02]: %s", err);
+    else {
       for (i = 0; i < time.length; i++) {
         console.log(time[i].startTime);
         cron.scheduleJob(time[i].startTime, function() {
           var query = connection.query("INSERT INTO ActivePackage (said,username,resourceString1,resourceString2,IP1,IP2,startTime,endTime) SELECT ResourceAllocated.said,User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,ResourceAllocated.startTime,ResourceAllocated.endTime FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said INNER JOIN ServiceRequests ON ServiceRequests.sid = ServiceActivities.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE actType = 4 and startTime = NOW() and ResourceAllocated.said NOT IN (SELECT said FROM ActivePackage)", function(err) {
-            var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,7 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 4 and startTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err) {
-              var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=7 WHERE actType = 4 and startTime = NOW()", function(err) {
-                if (err) console.log("Error Updating : %s ", err);
-                console.log(new Date(), "update");
+            if (err) console.log("Error inserting ActivePackage [02]: %s", err);
+            else {
+              var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,7 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 4 and startTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err) {
+                if (err) console.log("Error inserting ServiceLogs [02]: %s", err);
+                else {
+                  var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=7 WHERE actType = 4 and startTime = NOW()", function(err) {
+                    if (err) console.log("Error Updating [02]: %s ", err);
+                    else console.log(new Date(), "update");
+                  });
+                }
               });
-            });
+            }
           });
         });
       }
-    });
-    //service complete by endtime
-    var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 7", function(err, activetime) {
+    }
+  });
+  //service complete by endtime
+  var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 7", function(err, activetime) {
+    if (err) console.log("Error selecting ServiceActivities [03]: %s", err);
+    else {
       for (i = 0; i < activetime.length; i++) {
         console.log(activetime[i].endTime);
         cron.scheduleJob(activetime[i].endTime, function() {
           var query = connection.query("DELETE FROM ActivePackage WHERE endTime = NOW()", function(err) {
-            var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,10 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 7 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err) {
-              var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=10 WHERE actType = 7 and endTime = NOW()", function(err) {
-                if (err) console.log("Error Updating : %s ", err);
-                console.log(new Date(), "update");
+            if (err) console.log("Error deleting ActivePackage [03]: %s", err);
+            else {
+              var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,10 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 7 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err) {
+                if (err) console.log("Error inserting ServiceLogs [03]: %s", err);
+                else {
+                  var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=10 WHERE actType = 7 and endTime = NOW()", function(err) {
+                    if (err) console.log("Error Updating [03]: %s ", err);
+                    else console.log(new Date(), "update");
+                  });
+                }
               });
-            });
+            }
           });
         });
       }
-    });
-  };
+    }
+  });
+};
+
 // home index
 var index = function(req, res, next) {
   if (!req.isAuthenticated()) {
@@ -379,10 +370,8 @@ var status = function(req, res, next) {
               });
             });
           });
-                    //res.render('status',{page_title:"status",req:req,user:user,data:rows});
-                  });
-                //console.log(query.sql);
-              });
+        });
+      });
     } else {
       var user = req.user;
       if (user !== undefined) {
@@ -441,48 +430,6 @@ var document = function(req, res, next) {
     });
   }
 };
-//graph page render
-var graph = function(req, res, next) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
-    var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
-      var currentdate = new Date();
-      var month = currentdate.getMonth() + 1;
-      var date = currentdate.getDate();
-      if (currentdate.getMonth().toString().length == 1) {
-        month = '0' + (currentdate.getMonth() + 1);
-      }
-      if (currentdate.getDate().toString().length == 1) {
-        date = '0' + currentdate.getDate();
-      }
-      var alldate = currentdate.getFullYear() + "-" + month + "-" + date + '%';
-      var query = connection.query('SELECT *  FROM log_Online_status WHERE end_time LIKE ? Order By id', [alldate], function(err, logs_connected) {
-        if (err) {
-          console.log("Error Selecting : %s ", err);
-        }
-        var query = connection.query('SELECT *  FROM ServiceLogs WHERE actType = ? and timestamp LIKE ? Order By slid', [7, alldate], function(err, logs_service) {
-          if (err) {
-            console.log("Error Selecting : %s ", err);
-          }
-          res.render('graph', {
-            page_title: "graph",
-            req: req,
-            user: user,
-            logs_connected: logs_connected,
-            logs_service: logs_service
-          });
-        });
-      });
-    }
-  }
-};
 //contact us page render
 var contact = function(req, res, next) {
   if (!req.isAuthenticated()) {
@@ -516,17 +463,26 @@ var serviceac = function(req, res, next) {
     } else {
       req.getConnection(function(err, connection) {
         var query = connection.query('SELECT ResourceAllocated.said,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime , ServiceActivityType.actType , ServiceActivityType.nameE FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN ServiceActivityType ON ServiceActivities.actType=ServiceActivityType.actType WHERE user = ? and actbyuser != 1 and (ServiceActivities.actType = 0 or ServiceActivities.actType = 4 or ServiceActivities.actType = 7)', [user.id], function(err, data) {
-          var query = connection.query('SELECT ResourceAllocated.said,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime , ServiceActivityType.actType , ServiceActivityType.nameE FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN ServiceActivityType ON ServiceActivities.actType=ServiceActivityType.actType WHERE user = ? ', [user.id], function(err, state) {
-            var query = connection.query('SELECT ServiceLogs.said,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime , DATE_FORMAT(ServiceLogs.timestamp, "%Y/%m/%d %H:%i:%S") AS timestamp , ServiceActivityType.actType , ServiceActivityType.nameE FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN ServiceActivityType ON ServiceActivities.actType=ServiceActivityType.actType JOIN ServiceLogs ON ServiceActivities.said = ServiceLogs.said WHERE user = ? ', [user.id], function(err, history) {
-              res.render('serviceac', {
-                page_title: "serviceac",
-                user: user,
-                data: data,
-                history: history,
-                state: state
-              });
+          if (err) console.log("Error selecting ResourceAllocated [01]: %s", err);
+          else { 
+            var query = connection.query('SELECT ResourceAllocated.said,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime , ServiceActivityType.actType , ServiceActivityType.nameE FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN ServiceActivityType ON ServiceActivities.actType=ServiceActivityType.actType WHERE user = ? ', [user.id], function(err, state) {
+              if (err) console.log("Error selecting ResourceAllocated [02]: %s", err);
+              else { 
+                var query = connection.query('SELECT ServiceLogs.said,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime , DATE_FORMAT(ServiceLogs.timestamp, "%Y/%m/%d %H:%i:%S") AS timestamp , ServiceActivityType.actType , ServiceActivityType.nameE FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN ServiceActivityType ON ServiceActivities.actType=ServiceActivityType.actType JOIN ServiceLogs ON ServiceActivities.said = ServiceLogs.said WHERE user = ? ', [user.id], function(err, history) {
+                  if (err) console.log("Error selecting ServiceLogs: %s", err);
+                  else { 
+                    res.render('serviceac', {
+                      page_title: "serviceac",
+                      user: user,
+                      data: data,
+                      history: history,
+                      state: state
+                    });
+                  }
+                });
+              }
             });
-          });
+          }
         });
       });
     }
@@ -545,21 +501,33 @@ var ccServiceac = function(req, res) {
     var id = req.params.id;
     req.getConnection(function(err, connection) {
       var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 1 WHERE actType = 0 and said = ? ", [id], function(err, rows) {
-        var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,1 FROM ServiceActivities WHERE said = ?", [id], function(err) {
-          if (err) console.log("Error accept : %s ", err);
-        });
-      });
-      var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 5 WHERE actType = 4 and said = ? ", [id], function(err, rows) {
-        var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,5 FROM ServiceActivities WHERE said = ?", [id], function(err) {
-          if (err) console.log("Error accept : %s ", err);
-        });
-      });
-      var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 8 WHERE actType = 7 and said = ? ", [id], function(err, rows) {
-        var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,8 FROM ServiceActivities WHERE said = ?", [id], function(err) {
-          var query = connection.query("DELETE FROM ActivePackage WHERE said = ?", [id], function(err) {
+        if (err) console.log("Error updating ServiceActivities [01]: %s ", err);
+        else {
+          var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,1 FROM ServiceActivities WHERE said = ?", [id], function(err) {
             if (err) console.log("Error accept : %s ", err);
           });
-        });
+        }
+      });
+      var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 5 WHERE actType = 4 and said = ? ", [id], function(err, rows) {
+        if (err) console.log("Error updating ServiceActivities [02]: %s ", err);
+        else {
+          var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,5 FROM ServiceActivities WHERE said = ?", [id], function(err) {
+            if (err) console.log("Error accept : %s ", err);
+          });
+        }
+      });
+      var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 8 WHERE actType = 7 and said = ? ", [id], function(err, rows) {
+        if (err) console.log("Error updating ServiceActivities [03]: %s ", err);
+        else {
+          var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,8 FROM ServiceActivities WHERE said = ?", [id], function(err) {
+            if (err) console.log("Error inserting ServiceLogs: %s ", err);
+            else { 
+              var query = connection.query("DELETE FROM ActivePackage WHERE said = ?", [id], function(err) {
+                if (err) console.log("Error deleting: %s ", err);
+              });
+            }
+          });
+        }
       });
       res.redirect('/serviceac');
     });
@@ -569,15 +537,19 @@ var ccServiceac = function(req, res) {
 var addServiceac = function(req, res, next) {
   var input = JSON.parse(JSON.stringify(req.body));
   var user = req.user;
-
-  req.getConnection(function(err, connection) {
-        var query = connection.query("INSERT INTO ServiceRequests set user = ? ", [user.id], function(err, rows) {
-          if (err) console.log("Error inserting ServiceRequests: %s ", err);
+  if (user === undefined) {
+    ReportError(res, "User is undefined");
+  } else {
+    req.getConnection(function(err, connection) {
+      var query = connection.query("INSERT INTO ServiceRequests set user = ? ", [user.id], function(err, rows) {
+        if (err) console.log("Error inserting ServiceRequests: %s ", err);
+        else {
           var query = connection.query("INSERT INTO ServiceActivities (sid) SELECT sid From ServiceRequests WHERE user = ? Order By ServiceRequests.sid Desc LIMIT 1", [user.id], function(err, a) {
-                //console.log(a);
-                if (err) console.log("Error inserting ServiceActivities: %s ", err);
-                var query = connection.query("SELECT said From ServiceActivities Order By said Desc LIMIT 1", function(err, ss) {
-                  if (err) console.log("Error selecting ServiceActivities: %s ", err);
+            if (err) console.log("Error inserting ServiceActivities: %s ", err);
+            else {
+              var query = connection.query("SELECT said From ServiceActivities Order By said Desc LIMIT 1", function(err, ss) {
+                if (err) console.log("Error selecting ServiceActivities: %s ", err);
+                else { 
                   var str = JSON.stringify(ss);
                   ss1 = JSON.parse(str);
                   var mac1 = input.resourceString1.toString().toLowerCase();
@@ -602,44 +574,38 @@ var addServiceac = function(req, res, next) {
                             var temp = template[0].Text;
                             var userdata = connection.query('SELECT * FROM User WHERE id = ?', [user.id], function(err, userdata) {
                               if (!err) {
-                                                // send email notification
-                                                transporter.sendMail({
-                                                  form: 'Uninet Express Lane Services Team',
-                                                  to: userdata[0].email,
-                                                  subject: 'Uninet Express Lane',
-                                                  html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + temp + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                                                });
-                                                // save email log
-                                                var logdata = {
-                                                    //logDate   : now(),
-                                                    Sender: "Auto Sender",
-                                                    Reciver: userdata[0].username + "(" + userdata[0].email + ")",
-                                                    emailData: temp
-                                                  };
-                                                  var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                                                    if (err) {
-                                                      console.log("Error when query logs : %s", err);
-                                                    } else {
-                                                      console.log("Log saved");
-                                                    }
-                                                  });
-                                                } else {
-                                                  console.log("Error when query logs : %s", err);
-                                                }
-                                              });
-                          } else {
-                            console.log("Error when query logs : %s", err);
-                          }
+                                // send email notification
+                                transporter.sendMail({
+                                  form: 'Uninet Express Lane Services Team',
+                                  to: userdata[0].email,
+                                  subject: 'Uninet Express Lane',
+                                  html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + temp + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
+                                });
+                                // save email log
+                                var logdata = {
+                                  Sender: "Auto Sender",
+                                  Reciver: userdata[0].username + "(" + userdata[0].email + ")",
+                                  emailData: temp
+                                };
+                                var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
+                                  if (err) console.log("Error when query logs : %s", err);
+                                  else console.log("Log saved");
+                                });
+                              } else console.log("Error when query logs : %s", err);
+                            });
+                          } else console.log("Error when query logs : %s", err);
                         });
-                      } else {
-                        console.log("Error inserting : %s ", err);
-                      }
+                      } else console.log("Error inserting : %s ", err);
                     });
                   });
-                });
+                }
+              });
+            }
+          });
+        }
       });
     });
-  });
+  }
 };
 
 //user management
@@ -1110,35 +1076,20 @@ var addService = function(req, res, next) {
                             var query = connection.query("INSERT INTO ResourceAllocated SET ? ", data, function(err) {
                               if (!err) {
                                 var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,0 FROM ServiceActivities WHERE said = ?", select_said_parsed[0].said, function(err) {  
-                                  if (!err) {
-                                    res.redirect('/servicemanage');
-                                  } else {
-                                    console.log("Error saved log: %s ", err);
-                                  }
+                                  if (!err) res.redirect('/servicemanage');
+                                  else console.log("Error saved log: %s ", err);
                                 });
-                              } else {
-                                console.log("Error inserting to DB: %s ", err);
-                              }
+                              } else console.log("Error inserting to DB: %s ", err);
                             });
-                          } else {
-                            console.log("Error selecting ServiceActivities: %s ", err);
-                          }
+                          } else console.log("Error selecting ServiceActivities: %s ", err);
                         });
-                      } else {
-                        console.log("Error inserting ServiceActivities: %s ", err);
-                      }
+                      } else console.log("Error inserting ServiceActivities: %s ", err);
                     });
-                  } else {
-                    console.log("Error selecting ServiceActivities: %s ", err);
-                  }
+                  } else console.log("Error selecting ServiceActivities: %s ", err);
                 });                
-              } else {
-                console.log("Error inserting ServiceRequests: %s ", err);
-              }
+              } else console.log("Error inserting ServiceRequests: %s ", err);
             });
-          } else {
-            console.log("Error query id: %s ", err);
-          }
+          } else console.log("Error query id: %s ", err);
         });
       });
     }
@@ -1635,77 +1586,79 @@ var signUpPost = function(req, res, next) {
         errorMessagesu: 'username already exists'
       });
     } else {            
-            //****************************************************//
-            // MORE VALIDATION GOES HERE(E.G. PASSWORD VALIDATION)
-            //****************************************************//
-            var password = user.password;
-            var hash = bcrypt.hashSync(password);
-            var signUpUser = new Model.User({
-              username: user.username,
-              password: hash,
-              NameE: user.NameE,
-              LastNameE: user.LastNameE,
-              org: user.org,
-              phone: user.phone,
-              email: user.email,
-              message: user.message
-            });     
-            var user_form = {
-              username: user.username,
-              password: hash,
-              NameE: user.NameE,
-              LastNameE: user.LastNameE,
-              org: user.org,
-              phone: user.phone,
-              email: user.email,
-              membertype: 0,
-              flag: 0,
-              message: user.message
-            };     
-            var insertion = connection.query("INSERT INTO `User` SET ?", user_form, function(err, rows) {
-              if (err) {
-                console.log("Error when insert query : %s", err);
-              } else {
-                    //send email  function
-                    var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = 1', function(err, template) { //Query data from database
-                      if (!err) {
-                        var temp = template[0].Text
-                                // send email notification
-                                transporter.sendMail({
-                                  form: 'Uninet Express Lane Services Team',
-                                  to: user.email,
-                                  subject: 'Uninet Express Lane',
-                                  html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + user.NameE + ' ' + user.LastNameE + ', <br><br>' + temp + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                                });
-                            //log data
-                            var logdata = {
-                                //logDate   : now(),
-                                Sender: "AUTO Sender",
-                                Reciver: user.username + "(" + user.email + ")",
-                                emailData: temp
-                              };
-                            //save logs to database
-                            var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                              if (err) {
-                                console.log("Error when query logs : %s", err);
-                              } else {
-                                console.log("Log saved");
-                              }
-                            });
-                            //console.log(arr);
-                            console.log("Email was send ...");
-                          } else {
-                            console.log("Error query database ...");
-                            //connection.release();
-                          }
-                        });
-                    res.render('registed', {
-                      title: 'Registed'
-                    });
-                  }
-                });
-          }
-        });
+      //****************************************************//
+      // MORE VALIDATION GOES HERE(E.G. PASSWORD VALIDATION)
+      //****************************************************//
+      var password = user.password;
+      var hash = bcrypt.hashSync(password);
+      var signUpUser = new Model.User({
+        username: user.username,
+        password: hash,
+        NameE: user.NameE,
+        LastNameE: user.LastNameE,
+        org: user.org,
+        phone: user.phone,
+        email: user.email,
+        message: user.message
+      });     
+      var user_form = {
+        username: user.username,
+        password: hash,
+        NameE: user.NameE,
+        LastNameE: user.LastNameE,
+        org: user.org,
+        phone: user.phone,
+        email: user.email,
+        membertype: 0,
+        flag: 0,
+        message: user.message
+      };     
+      var insertion = connection.query("INSERT INTO `User` SET ?", user_form, function(err, rows) {
+        if (err) {
+          console.log("Error when insert query: %s", err);
+          ReportError(res, err);                
+        } else {
+          //send email  function
+          var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = 1', function(err, template) { //Query data from database
+            if (!err) {
+              var temp = template[0].Text
+              // send email notification
+              transporter.sendMail({
+                form: 'Uninet Express Lane Services Team',
+                to: user.email,
+                subject: 'Uninet Express Lane',
+                html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + user.NameE + ' ' + user.LastNameE + ', <br><br>' + temp + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
+              });
+              //log data
+              var logdata = {
+                  //logDate   : now(),
+                  Sender: "AUTO Sender",
+                  Reciver: user.username + "(" + user.email + ")",
+                  emailData: temp
+                };
+              //save logs to database
+              var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
+                if (err) {
+                  console.log("Error when query logs : %s", err);
+                  ReportError(res, err); 
+                } else {
+                  console.log("Log saved");
+                }
+              });
+              //console.log(arr);
+              console.log("Email was send ...");
+            } else {
+              console.log("Error query database ...");
+              //connection.release();
+            }
+          });
+          res.render('registed', {
+            title: 'Registed'
+          });
+        }
+      });
+    }
+  });
 };
 // sign out
 var signOut = function(req, res, next) {
@@ -1719,14 +1672,14 @@ var signOut = function(req, res, next) {
       });
       var query = connection.query('INSERT INTO accessLogs(user,action) SELECT User.username,2 FROM User WHERE User.id = ?', [user.id], function(err, rows) {
         if (err) console.log("Error Selecting : %s ", err);
-      });
+      });      
     });
     req.logout();
     res.redirect('/');
   }
 };
 // Document PDF
-var pdf1 = function(req, res, next) {
+var pdf = function(req, res, next) {
   var file = __dirname + '/PDF/UniNet-Express-Guildline.pdf';
     res.download(file); // Set disposition and send it.
   };
@@ -1736,7 +1689,7 @@ var pdf1 = function(req, res, next) {
 var add_rest_service = function(req, res, next) {
   var input = JSON.parse(JSON.stringify(req.body));
   var user = JSON.parse(JSON.stringify(req.body.user));
-
+  
   req.getConnection(function(err, connection) {
     var query = connection.query('SELECT id, username, password FROM User WHERE username = ?', [user.username], function(err, rows) {
       if (!err) {
@@ -1916,6 +1869,16 @@ function email_sender(email_id, user_id) { //RETURN callback-> 0 (NOT OK) or 1 (
   });
 }
 
+function ReportError(res, err) {
+  var errMsg = {
+    errorMessage: err
+  };
+  console.log("Report Error ----->> "+errMsg.errorMessage);
+  res.set('Content-Type', 'application/json');
+  res.send(errMsg);
+}
+
+connection.end();
 
 // export functions
 /**************************************/
@@ -1930,13 +1893,13 @@ module.exports.profile = profile;
 //repassword
 module.exports.repass = repass
 module.exports.repasspost = repasspost
-    //content
-    module.exports.about = about;
-    module.exports.contact = contact;
-    module.exports.status = status;
-    module.exports.service = service;
-    module.exports.document = document;
-    module.exports.graph = graph;
+//content
+module.exports.about = about;
+module.exports.contact = contact;
+module.exports.status = status;
+module.exports.service = service;
+module.exports.document = document;
+// module.exports.graph = graph;
 //memberaction
 module.exports.serviceac = serviceac;
 module.exports.addServiceac = addServiceac;
@@ -1975,4 +1938,4 @@ module.exports.signUpPost = signUpPost;
 module.exports.statusPost = statusPost;
 // sign out
 module.exports.signOut = signOut;
-module.exports.pdf1 = pdf1;
+module.exports.pdf = pdf;

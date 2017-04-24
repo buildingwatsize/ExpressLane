@@ -54,7 +54,7 @@ passport.deserializeUser(function(username, done) {
         done(null, user);
     });
 });
-//server defualt setting
+//server default setting
 app.set('port', process.env.PORT || 8000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -62,12 +62,15 @@ app.use(express.logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
-//app.use(express.static("public"));
 app.use(express.static(__dirname + '/public'));
 app.use(cookieParser());
-app.use(bodyParser());
+// app.use(bodyParser()); //IT'S DEPRECATED
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}))
 app.use(session({
-    secret: 'secret strategic xxzzz code'
+    secret: 'secret strategic xxzzz code',
+    resave: true,
+    saveUninitialized: true
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -82,20 +85,17 @@ app.use(connection(mysql, {
 //index
 app.get('/', route.index, route.check);
 //profile
-app.get('/profile', route.profile);
+app.get('/profile', route.profile); ///////////
 //repassword
 app.get('/repass', route.repass);
-app.post('/repass', route.repasspost);
+app.post('/repass', route.repasspost); 
 //project information
-app.get('/about', route.about);
-app.get('/contact', route.contact);
+// app.get('/about', route.about);
+// app.get('/contact', route.contact);
 app.get('/service', route.service);
-app.get('/document', route.document);
+// app.get('/document', route.document);
 //status node
 app.get('/status', route.status);
-//graph
-app.get('/graph', route.graph);
-app.post('/graph', route.statusPost);
 // signin
 app.post('/signin', route.signInPost);
 // signup
@@ -105,11 +105,8 @@ app.post('/signup', route.signUpPost);
 app.get('/signout', route.signOut);
 //serviceactivities
 app.get('/serviceac', route.serviceac, route.check);
-app.post('/addServiceac', route.addServiceac);
-app.post('/add_rest_service', route.add_rest_service);
-app.post('/edit_rest_service', route.edit_rest_service);
-app.post('/delete_rest_service', route.delete_rest_service);
 app.get('/serviceac/cancel/:id', route.ccServiceac);
+app.post('/addServiceac', route.addServiceac);
 //service management
 app.get('/servicemanage', route.servicemanage, route.check);
 app.post('/addService', route.addService, route.check);
@@ -127,14 +124,21 @@ app.get('/user/delete/:id', route.delete_user);
 app.get('/user/cancel/:id', route.cancel_user);
 // mail management
 app.get('/emailmanage', route.emailmanage);
-//app.get('/emailmanage',route.emailLogs);
 app.get('/emailmanage/mailedit/:id', route.mailedit);
 app.post('/emailmanage/mailedit/:id', route.mailsave);
-app.get('/document/pdf1', route.pdf1);
+app.get('/PDF/UniNet-Express-Guildline.pdf', route.pdf);
+
+//ADDITIONAL REST API
+app.post('/add_rest_service', route.add_rest_service);
+app.post('/edit_rest_service', route.edit_rest_service);
+app.post('/delete_rest_service', route.delete_rest_service);
+
 /********************************/
 //server start alert
 app.use(app.router);
 var server = app.listen(app.get('port'), function() {
     var message = 'Server is running @ http://localhost:' + server.address().port;
+    console.log("==========================================");
     console.log(message);
+    console.log("==========================================");    
 });
