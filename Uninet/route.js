@@ -29,120 +29,129 @@ var transporter = nodemailer.createTransport({
 
 //check function to change service state
 var check = function(req, res) {
-  //request timeout
-  var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said INNER JOIN ServiceRequests ON ServiceRequests.sid = ServiceActivities.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE actType = 0", function(err, servicetime) {
-    if (err) console.log("Error selecting ServiceActivities [01]: %s", err);
-    else { 
-      for (i = 0; i < servicetime.length; i++) {
-        console.log(servicetime[i].endTime + "//" + servicetime[i].username + " (" + servicetime[i].email + ")");
-        cron.scheduleJob(servicetime[i].endTime, function() {
-          var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said, 3 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 0 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err) {
-            if (err) console.log("Error inserting ServiceLogs [01]: %s", err);
-            else {
-              var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=3 WHERE actType = 0 and endTime = NOW()", function(err) {
-                if (err) console.log("Error Updating [01]: %s ", err);
-                else console.log(new Date(), "update");
-              });
-            }
+  req.getConnection(function(err, connection) {
+    //request timeout
+    var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said INNER JOIN ServiceRequests ON ServiceRequests.sid = ServiceActivities.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE actType = 0", function(err, servicetime) {
+      if (err) console.log("Error selecting ServiceActivities [01]: %s", err);
+      else { 
+        for (i = 0; i < servicetime.length; i++) {
+          console.log(servicetime[i].endTime + "//" + servicetime[i].username + " (" + servicetime[i].email + ")");
+          cron.scheduleJob(servicetime[i].endTime, function() {
+            var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said, 3 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 0 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err) {
+              if (err) console.log("Error inserting ServiceLogs [01]: %s", err);
+              else {
+                var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=3 WHERE actType = 0 and endTime = NOW()", function(err) {
+                  if (err) console.log("Error Updating [01]: %s ", err);
+                  else console.log(new Date(), "update");
+                });
+              }
+            });
           });
-        });
+        }
       }
-    }
-  });
-  //service active by start time
-  var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 4", function(err, time) {
-    if (err) console.log("Error selecting ServiceActivities [02]: %s", err);
-    else {
-      for (i = 0; i < time.length; i++) {
-        console.log(time[i].startTime);
-        cron.scheduleJob(time[i].startTime, function() {
-          var query = connection.query("INSERT INTO ActivePackage (said,username,resourceString1,resourceString2,IP1,IP2,startTime,endTime) SELECT ResourceAllocated.said,User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,ResourceAllocated.startTime,ResourceAllocated.endTime FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said INNER JOIN ServiceRequests ON ServiceRequests.sid = ServiceActivities.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE actType = 4 and startTime = NOW() and ResourceAllocated.said NOT IN (SELECT said FROM ActivePackage)", function(err) {
-            if (err) console.log("Error inserting ActivePackage [02]: %s", err);
-            else {
-              var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,7 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 4 and startTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err) {
-                if (err) console.log("Error inserting ServiceLogs [02]: %s", err);
-                else {
-                  var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=7 WHERE actType = 4 and startTime = NOW()", function(err) {
-                    if (err) console.log("Error Updating [02]: %s ", err);
-                    else console.log(new Date(), "update");
-                  });
-                }
-              });
-            }
+    });
+    //service active by start time
+    var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 4", function(err, time) {
+      if (err) console.log("Error selecting ServiceActivities [02]: %s", err);
+      else {
+        for (i = 0; i < time.length; i++) {
+          console.log(time[i].startTime);
+          cron.scheduleJob(time[i].startTime, function() {
+            var query = connection.query("INSERT INTO ActivePackage (said,username,resourceString1,resourceString2,IP1,IP2,startTime,endTime) SELECT ResourceAllocated.said,User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,ResourceAllocated.startTime,ResourceAllocated.endTime FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said INNER JOIN ServiceRequests ON ServiceRequests.sid = ServiceActivities.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE actType = 4 and startTime = NOW() and ResourceAllocated.said NOT IN (SELECT said FROM ActivePackage)", function(err) {
+              if (err) console.log("Error inserting ActivePackage [02]: %s", err);
+              else {
+                var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,7 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 4 and startTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err) {
+                  if (err) console.log("Error inserting ServiceLogs [02]: %s", err);
+                  else {
+                    var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=7 WHERE actType = 4 and startTime = NOW()", function(err) {
+                      if (err) console.log("Error Updating [02]: %s ", err);
+                      else console.log(new Date(), "update");
+                    });
+                  }
+                });
+              }
+            });
           });
-        });
+        }
       }
-    }
-  });
-  //service complete by endtime
-  var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 7", function(err, activetime) {
-    if (err) console.log("Error selecting ServiceActivities [03]: %s", err);
-    else {
-      for (i = 0; i < activetime.length; i++) {
-        console.log(activetime[i].endTime);
-        cron.scheduleJob(activetime[i].endTime, function() {
-          var query = connection.query("DELETE FROM ActivePackage WHERE endTime = NOW()", function(err) {
-            if (err) console.log("Error deleting ActivePackage [03]: %s", err);
-            else {
-              var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,10 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 7 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err) {
-                if (err) console.log("Error inserting ServiceLogs [03]: %s", err);
-                else {
-                  var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=10 WHERE actType = 7 and endTime = NOW()", function(err) {
-                    if (err) console.log("Error Updating [03]: %s ", err);
-                    else console.log(new Date(), "update");
-                  });
-                }
-              });
-            }
+    });
+    //service complete by endtime
+    var query = connection.query("SELECT * FROM ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said WHERE actType = 7", function(err, activetime) {
+      if (err) console.log("Error selecting ServiceActivities [03]: %s", err);
+      else {
+        for (i = 0; i < activetime.length; i++) {
+          console.log(activetime[i].endTime);
+          cron.scheduleJob(activetime[i].endTime, function() {
+            var query = connection.query("DELETE FROM ActivePackage WHERE endTime = NOW()", function(err) {
+              if (err) console.log("Error deleting ActivePackage [03]: %s", err);
+              else {
+                var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,10 FROM ResourceAllocated INNER JOIN ServiceActivities ON ServiceActivities.said = ResourceAllocated.said WHERE actType = 7 and endTime = NOW() and ServiceActivities.said NOT IN (SELECT said FROM ServiceLogs) and  ServiceActivities.actType NOT IN (SELECT actType FROM ServiceLogs)", function(err) {
+                  if (err) console.log("Error inserting ServiceLogs [03]: %s", err);
+                  else {
+                    var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ResourceAllocated.said = ServiceActivities.said SET actType=10 WHERE actType = 7 and endTime = NOW()", function(err) {
+                      if (err) console.log("Error Updating [03]: %s ", err);
+                      else console.log(new Date(), "update");
+                    });
+                  }
+                });
+              }
+            });
           });
-        });
+        }
       }
-    }
+    });
+    connection.release();
   });
 };
 
 // home index
-var index = function(req, res, next) {
+var index = function(req, res) {
   if (!req.isAuthenticated()) {
     req.getConnection(function(err, connection) {
       var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
-        if (err) { console.log(err); }
-        res.render('index', {
-          title: 'Home',
-          req: req,
-          status_user: status_user
-        });
+        if (err) console.log("Error selecting Online_Status: %s", err);
+        else {
+          res.render('index', {
+            title: 'Home',
+            req: req,
+            status_user: status_user
+          });
+        }
       });
     });
   } else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
+    if (user !== undefined) user = user.toJSON();
     req.getConnection(function(err, connection) {
-      var query = connection.query("UPDATE User set flag=1 WHERE id = ? ", [user.id], function(rows) {});
-      var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
-        if (err) { console.log(err); }
-        res.render('index', {
-          title: 'Home',
-          req: req,
-          user: user,
-          status_user: status_user
-        });
-      });
+      var query = connection.query("UPDATE User set flag=1 WHERE id = ? ", [user.id], function(rows) {
+        if (err) console.log("Error updating User: %s", err);
+        else {
+          var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
+            if (err) console.log("Error selecting Online_Status: %s", err);
+            else {
+              res.render('index', {
+                title: 'Home',
+                req: req,
+                user: user,
+                status_user: status_user
+              });
+            }
+          });
+        } 
+      });  
+      connection.release();
     });
   }
-  next();
+  // next();
 };
-//member signed in
-var member = function(req, res, next) {
+
+//GET member signed in
+var member = function(req, res) {
   if (!req.isAuthenticated()) {
     res.redirect('/');
   } else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
+    if (user !== undefined) user = user.toJSON();
     if (user.role === 1) {
       res.render('admin', {
         title: 'Home',
@@ -156,311 +165,212 @@ var member = function(req, res, next) {
     }
   }
 };
-//view profile
-var profile = function(req, res, next) {
+
+//GET view profile
+var profile = function(req, res) {
   if (!req.isAuthenticated()) {
     res.redirect('/');
+  } else {
+    var user = req.user;
+    if (user !== undefined) user = user.toJSON();
+    res.render('profile', {
+      title: 'Profile',
+      user: user
+    });
+  }
+};
+
+//GET reset password render
+var repass = function(req, res) {
+  if (!req.isAuthenticated()) {
+    res.render('repass', {
+      title: 'Reset Password',
+      req: req
+    });
   } else {
     var user = req.user;
     if (user !== undefined) {
       user = user.toJSON();
     }
-    res.render('profile', {
-      title: 'profile',
+    res.render('repass', {
+      title: 'Reset Password',
+      req: req,
       user: user
     });
   }
 };
-//reset password render
-var repass = function(req, res, next) {
-  var user = req.user;
-  if (user !== undefined) {
-    user = user.toJSON();
-  }
-  res.render('repass', {
-    title: 'Reset Password',
-    req: req,
-    user: user
-  });
-};
-//reset password submit
-var repasspost = function(req, res, next) {
+
+//POST reset password
+var repasspost = function(req, res) {
   var input = JSON.parse(JSON.stringify(req.body));
   var id = req.params.id;
   req.getConnection(function(err, connection) {
     var username = input.username;
     var email = input.email;
     var hash = bcrypt.hashSync(input.password);
-    var query = connection.query("SELECT * FROM User WHERE username = ? and email = ? ", [username, email], function(err, check) {
-      if (JSON.stringify(check) === '[]') {
-        var error = "Invalid username or email"
-        if (!req.isAuthenticated()) {
-          res.render('repass', {
-            title: 'Reset Password',
-            req: req,
-            error: error
-          });
-        } else {
-          var user = req.user;
-          if (user !== undefined) {
-            user = user.toJSON();
+    var query = connection.query("SELECT * FROM User WHERE username = ? and email = ? ", [username, email], function(err, user_data) {
+      if (err) console.log("Error selecting User: %s", err);
+      else {
+        if (JSON.stringify(user_data) === '[]') {
+          var error = "Invalid username or email"
+          if (!req.isAuthenticated()) {
+            res.render('repass', {
+              title: 'Reset Password',
+              req: req,
+              error: error
+            });
+          } else {
+            var user = req.user;
+            if (user !== undefined) {
+              user = user.toJSON();
+            }
+            res.render('repass', {
+              title: 'Reset Password',
+              req: req,
+              user: user,
+              error: error
+            });
           }
-          res.render('repass', {
-            title: 'Reset Password',
-            req: req,
-            user: user,
-            error: error
+        } else {
+          var query = connection.query("UPDATE User set password = ? WHERE username = ? and email = ? ", [hash, username, email], function(err, rows) {
+            if (err) console.log("Error updating User: %s", err);
+            else {
+              email_sender(4, user_data[0].id); //EMAIL TEMPLATE 4
+              if (!req.isAuthenticated()) {
+                res.render('repassed', {
+                  title: 'Reset Password',
+                  req: req
+                });
+              } else {
+                var user = req.user;
+                if (user !== undefined) {
+                  user = user.toJSON();
+                }
+                res.render('repassed', {
+                  title: 'Reset Password',
+                  req: req,
+                  user: user
+                });
+              }
+            }
           });
         }
-      } else {
-        var query = connection.query("UPDATE User set password = ? WHERE username = ? and email = ? ", [hash, username, email], function(err, rows) {
-          var user = req.user;
-          if (user !== undefined) {
-            user = user.toJSON();
-          }
-          if (err) {
-            console.log("Error Updating : %s ", err);
-          } else {
-            res.render('repassed', {
-              title: 'repassed',
-              req: req,
-              user: user
-            });
-                        var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = 4', function(err, template) { //Query data from database
-                          if (!err) {
-                            var temp = template[0].Text;
-                                // send email notification
-                                transporter.sendMail({
-                                  form: 'Uninet Express Lane Services Team',
-                                  to: check[0].email,
-                                  subject: 'Uninet Express Lane',
-                                  html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + check[0].NameE + ' ' + check[0].LastNameE + ', <br><br>' + temp + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                                });
-                                var logdata = {
-                                  Sender: "Auto Sender",
-                                  Reciver: check[0].username + "(" + check[0].email + ")",
-                                  emailData: temp
-                                };
-                                //save logs to database
-                                var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                                  if (err) {
-                                    console.log("Error when query logs : %s", err);
-                                  } else {
-                                    console.log("Log saved");
-                                  }
-                                });
-                                console.log("Email was send ...");
-                              } else {
-                                console.log("Error query database ...");
-                              }
-                            });
-                      }
-                    });
       }
     });
+    connection.release();
   });
 };
-//about page render
-var about = function(req, res, next) {
-  if (!req.isAuthenticated()) {
-    res.render('about', {
-      title: 'about',
-      req: req
-    });
-  } else {
-    var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    res.render('about', {
-      title: 'about',
-      req: req,
-      user: user
-    });
-  }
-};
-//status node admin
-var statusPost = function(req, res, next) {
-  var getdate = req.body.date_selection;
-  var month_str = getdate.toString().substring(0, 2);
-  var date_str = getdate.toString().substring(3, 5);
-  var year_str = getdate.toString().substring(6, 10);
-  var alldate = year_str + "-" + month_str + "-" + date_str + '%';
-    //alldate = new Date(alldate);
-    if (!req.isAuthenticated()) {
-      res.redirect('/');
-    } else {
-      var user = req.user;
-      if (user !== undefined) {
-        user = user.toJSON();
-      }
-      var query = connection.query('SELECT *  FROM log_Online_status WHERE end_time LIKE ? Order By id ', [alldate], function(err, logs_connected) {
-        if (err) {
-          console.log("Error Selecting : %s ", err);
-        }
-        var query = connection.query('SELECT *  FROM ServiceLogs WHERE actType = ? and timestamp LIKE ? Order By slid', [7, alldate], function(err, logs_service) {
-          if (err) {
-            console.log("Error Selecting : %s ", err);
-          }
-          res.render('graph', {
-            page_title: "graph",
-            req: req,
-            user: user,
-            logs_connected: logs_connected,
-            logs_service: logs_service
-          });
-        });
-      });
-    }
-  };
-//status node member
-var status = function(req, res, next) {
+
+//GET status node
+var status = function(req, res) {
   if (!req.isAuthenticated()) {
     req.getConnection(function(err, connection) {
       var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status Order By id ', function(err, status_user) {
         if (err) console.log("Error Selecting : %s ", err);
-        res.render('status', {
-          page_title: "status",
-          req: req,
-          status_user: status_user
-        });
-      });
-            //console.log(query.sql);
+        else {
+          res.render('status', {
+            title: "Status",
+            req: req,
+            status_user: status_user
           });
+        }
+      });
+    });
   } else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
+    if (user !== undefined) user = user.toJSON();    
     if (user.role === 1) {
       req.getConnection(function(err, connection) {
         var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status) {
-          if (err) console.log("Error Selecting : %s ", err);
-          var query = connection.query('SELECT * FROM Netfpga_Status', function(err, rows) {
-            if (err) console.log("Error Selecting : %s ", err);
-            var query = connection.query('SELECT *  FROM Nagios_Status', function(err, nagios) {
-              if (err) {
-                console.log("Error Selecting : %s ", err);
-              }
-              var query = connection.query('SELECT id , zone , DATE_FORMAT(timestamp , "%Y/%m/%d %H:%i:%S") AS timestamp , in_port1 , dl_dest1 , output1 , in_port2 , dl_dest2 , output2 , packet  FROM log_netfpga', function(err, logs_netfpga) {
-                if (err) {
-                  console.log("Error Selecting : %s ", err);
-                }
-                var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM log_Online_status', function(err, logs_node) {
-                  if (err) {
-                    console.log("Error Selecting : %s ", err);
-                  }
-                  var query = connection.query('SELECT id , zone , DATE_FORMAT(timestamp , "%Y/%m/%d %H:%i:%S") AS timestamp , service , statuss FROM log_nagios', function(err, logs_nagios) {
-                    if (err) {
-                      console.log("Error Selecting : %s ", err);
-                    }
-                    res.render('status', {
-                      page_title: "status",
-                      req: req,
-                      user: user,
-                      status: status,
-                      logs_nagios: logs_nagios,
-                      data: rows,
-                      nagios: nagios,
-                      logs_netfpga: logs_netfpga,
-                      logs_node: logs_node
+          if (err) console.log("Error selecting Online_Status: %s ", err);
+          else { 
+            var query = connection.query('SELECT * FROM Netfpga_Status', function(err, rows) {
+              if (err) console.log("Error selecting Netfpga_Status: %s ", err);
+              else { 
+                var query = connection.query('SELECT *  FROM Nagios_Status', function(err, nagios) {
+                  if (err) console.log("Error selecting Nagios_Status: %s ", err);
+                  else { 
+                    var query = connection.query('SELECT id , zone , DATE_FORMAT(timestamp , "%Y/%m/%d %H:%i:%S") AS timestamp , in_port1 , dl_dest1 , output1 , in_port2 , dl_dest2 , output2 , packet  FROM log_netfpga', function(err, logs_netfpga) {
+                      if (err) console.log("Error selecting log_netfpga: %s ", err);
+                      else { 
+                        var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM log_Online_status', function(err, logs_node) {
+                          if (err) console.log("Error selecting log_Online_status: %s ", err);
+                          else {
+                            var query = connection.query('SELECT id , zone , DATE_FORMAT(timestamp , "%Y/%m/%d %H:%i:%S") AS timestamp , service , statuss FROM log_nagios', function(err, logs_nagios) {
+                              if (err) console.log("Error selecting log_nagios: %s ", err);
+                              else {
+                                res.render('status', {
+                                  title: "Status",
+                                  req: req,
+                                  user: user,
+                                  status: status,
+                                  logs_nagios: logs_nagios,
+                                  data: rows,
+                                  nagios: nagios,
+                                  logs_netfpga: logs_netfpga,
+                                  logs_node: logs_node
+                                });
+                              }
+                            });
+                          }
+                        });
+                      }
                     });
-                  });
+                  }
                 });
-              });
+              }
             });
-          });
+          }
         });
       });
     } else {
       var user = req.user;
-      if (user !== undefined) {
-        user = user.toJSON();
-      }
+      if (user !== undefined) user = user.toJSON();
       req.getConnection(function(err, connection) {
         var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
-          if (err) console.log("Error Selecting : %s ", err);
-          res.render('status', {
-            page_title: "status",
-            user: user,
-            req: req,
-            status_user: status_user
-          });
+          if (err) console.log("Error selecting Online_Status: %s ", err);
+          else {
+            res.render('status', {
+              page_title: "Status",
+              user: user,
+              req: req,
+              status_user: status_user
+            });
+          }
         });
-                //console.log(query.sql);
-              });
+        connection.release();
+      });
     }
   }
 };
-//service page render
-var service = function(req, res, next) {
+
+//GET service text content page
+var service = function(req, res) {
   if (!req.isAuthenticated()) {
     res.render('service', {
-      title: 'service',
+      title: 'Service',
       req: req
     });
   } else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
+    if (user !== undefined) user = user.toJSON();
     res.render('service', {
-      title: 'service',
+      title: 'Service',
       req: req,
       user: user
     });
   }
 };
-//document page render
-var document = function(req, res, next) {
-  if (!req.isAuthenticated()) {
-    res.render('document', {
-      title: 'document',
-      req: req
-    });
-  } else {
-    var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    res.render('document', {
-      title: 'document',
-      req: req,
-      user: user
-    });
-  }
-};
-//contact us page render
-var contact = function(req, res, next) {
-  if (!req.isAuthenticated()) {
-    res.render('contact', {
-      title: 'contact',
-      req: req
-    });
-  } else {
-    var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    res.render('contact', {
-      title: 'contact',
-      req: req,
-      user: user
-    });
-  }
-};
-//serviceactivities page for member
+
+//GET service activities page for member
 var serviceac = function(req, res, next) {
   if (!req.isAuthenticated()) {
     res.redirect('/');
   } else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role === 1) {
-      res.redirect('/');
-    } else {
+    if (user !== undefined) user = user.toJSON();
+    if (user.role === 1) res.redirect('/');
+    else {
       req.getConnection(function(err, connection) {
         var query = connection.query('SELECT ResourceAllocated.said,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime , ServiceActivityType.actType , ServiceActivityType.nameE FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN ServiceActivityType ON ServiceActivities.actType=ServiceActivityType.actType WHERE user = ? and actbyuser != 1 and (ServiceActivities.actType = 0 or ServiceActivities.actType = 4 or ServiceActivities.actType = 7)', [user.id], function(err, data) {
           if (err) console.log("Error selecting ResourceAllocated [01]: %s", err);
@@ -472,7 +382,7 @@ var serviceac = function(req, res, next) {
                   if (err) console.log("Error selecting ServiceLogs: %s", err);
                   else { 
                     res.render('serviceac', {
-                      page_title: "serviceac",
+                      title: "ServiceActivity",
                       user: user,
                       data: data,
                       history: history,
@@ -484,27 +394,25 @@ var serviceac = function(req, res, next) {
             });
           }
         });
+        connection.release();
       });
     }
   }
-  next();
 };
-//cancel service on serviceactivities page
+
+//GET cancel service on service activities page for member
 var ccServiceac = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
+    if (user !== undefined) user = user.toJSON();
     var id = req.params.id;
     req.getConnection(function(err, connection) {
       var query = connection.query("UPDATE ServiceActivities SET actbyuser = 1 ,actType = 1 WHERE actType = 0 and said = ? ", [id], function(err, rows) {
         if (err) console.log("Error updating ServiceActivities [01]: %s ", err);
         else {
           var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,1 FROM ServiceActivities WHERE said = ?", [id], function(err) {
-            if (err) console.log("Error accept : %s ", err);
+            if (err) console.log("Error accept [01] : %s ", err);
           });
         }
       });
@@ -512,7 +420,7 @@ var ccServiceac = function(req, res) {
         if (err) console.log("Error updating ServiceActivities [02]: %s ", err);
         else {
           var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,5 FROM ServiceActivities WHERE said = ?", [id], function(err) {
-            if (err) console.log("Error accept : %s ", err);
+            if (err) console.log("Error accept [02]: %s ", err);
           });
         }
       });
@@ -529,199 +437,151 @@ var ccServiceac = function(req, res) {
           });
         }
       });
+      connection.release();
       res.redirect('/serviceac');
     });
   }
 };
-//request service for member
-var addServiceac = function(req, res, next) {
+
+//GET request service for member
+var addServiceac = function(req, res) {
   var input = JSON.parse(JSON.stringify(req.body));
   var user = req.user;
-  if (user === undefined) {
-    ReportError(res, "User is undefined");
-  } else {
+  if (user === undefined) ReportError(res, "User is undefined");
+  else {
     req.getConnection(function(err, connection) {
       var query = connection.query("INSERT INTO ServiceRequests set user = ? ", [user.id], function(err, rows) {
         if (err) console.log("Error inserting ServiceRequests: %s ", err);
         else {
-          var query = connection.query("INSERT INTO ServiceActivities (sid) SELECT sid From ServiceRequests WHERE user = ? Order By ServiceRequests.sid Desc LIMIT 1", [user.id], function(err, a) {
-            if (err) console.log("Error inserting ServiceActivities: %s ", err);
+          var query = connection.query("SELECT sid From ServiceRequests WHERE user = ? Order By ServiceRequests.sid Desc LIMIT 1", [user.id], function(err, sid_query) {
+            if (err) console.log("Error selecting ServiceRequests: %s ", err);
             else {
-              var query = connection.query("SELECT said From ServiceActivities Order By said Desc LIMIT 1", function(err, ss) {
-                if (err) console.log("Error selecting ServiceActivities: %s ", err);
-                else { 
-                  var str = JSON.stringify(ss);
-                  ss1 = JSON.parse(str);
-                  var mac1 = input.resourceString1.toString().toLowerCase();
-                  var mac2 = input.resourceString2.toString().toLowerCase();
-                  var IP1 = input.IP1.toString().toLowerCase();
-                  var IP2 = input.IP2.toString().toLowerCase();
-                  var data = {
-                    resourceString1: mac1,
-                    resourceString2: mac2,
-                    IP1: IP1,
-                    IP2: IP2,
-                    startTime: input.startTime,
-                    endTime: input.endTime,
-                    said: ss1[0].said,
-                  };
-                  var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,0 FROM ServiceActivities WHERE said = ?", ss1[0].said, function(err) {
-                    var query = connection.query("INSERT INTO ResourceAllocated set ? ", data, function(err, rows) {
-                      if (!err) {
-                        res.redirect('/serviceac');
-                        var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = 5', function(err, template) {
-                          if (!err) {
-                            var temp = template[0].Text;
-                            var userdata = connection.query('SELECT * FROM User WHERE id = ?', [user.id], function(err, userdata) {
-                              if (!err) {
-                                // send email notification
-                                transporter.sendMail({
-                                  form: 'Uninet Express Lane Services Team',
-                                  to: userdata[0].email,
-                                  subject: 'Uninet Express Lane',
-                                  html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + temp + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                                });
-                                // save email log
-                                var logdata = {
-                                  Sender: "Auto Sender",
-                                  Reciver: userdata[0].username + "(" + userdata[0].email + ")",
-                                  emailData: temp
-                                };
-                                var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                                  if (err) console.log("Error when query logs : %s", err);
-                                  else console.log("Log saved");
-                                });
-                              } else console.log("Error when query logs : %s", err);
-                            });
-                          } else console.log("Error when query logs : %s", err);
-                        });
-                      } else console.log("Error inserting : %s ", err);
-                    });
+              var insert_data = {
+                sid: sid_query[0].sid,
+                actType: 0,
+                actbyuser: 0
+              }
+              var query = connection.query("INSERT INTO ServiceActivities SET ?", insert_data, function(err, rows) {
+                if (err) console.log("Error inserting ServiceActivities: %s ", err);
+                else {
+                  var query = connection.query("SELECT said From ServiceActivities Order By said Desc LIMIT 1", function(err, said_query) {
+                    if (err) console.log("Error selecting ServiceActivities: %s ", err);
+                    else { 
+                      var said_query_str = JSON.stringify(said_query);
+                      said_query_parsed = JSON.parse(said_query_str);
+                      var mac1 = input.resourceString1.toString().toLowerCase();
+                      var mac2 = input.resourceString2.toString().toLowerCase();
+                      var IP1 = input.IP1.toString().toLowerCase();
+                      var IP2 = input.IP2.toString().toLowerCase();
+                      var data = {
+                        resourceString1: mac1,
+                        resourceString2: mac2,
+                        IP1: IP1,
+                        IP2: IP2,
+                        startTime: input.startTime,
+                        endTime: input.endTime,
+                        said: said_query_parsed[0].said,
+                        source_node: 0,
+                        des_node: 0
+                      };
+                      var query = connection.query("INSERT INTO ResourceAllocated set ? ", data, function(err, rows) {
+                        if (err) console.log("Error inserting ResourceAllocated: %s ", err);
+                        else {
+                          var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,0 FROM ServiceActivities WHERE said = ?", said_query_parsed[0].said, function(err) {
+                            if (err) console.log("Error inserting ServiceLogs: %s ", err);
+                            else {
+                              var query = connection.query('SELECT * FROM User WHERE id = ?', [user.id], function(err, user_query) {
+                                if (err) console.log("Error selecting User: %s ", err);
+                                else {
+                                  email_sender(5, user_query[0].id);
+                                  res.redirect('/serviceac');
+                                }
+                              });
+                            }
+                          });
+                        }
+                      });
+                    }
                   });
                 }
               });
             }
           });
-        }
+        }        
       });
+      connection.release();
     });
   }
 };
 
-//user management
-var user = function(req, res, next) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+//GET user management
+var user = function(req, res) {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {
       req.getConnection(function(err, connection) {
         var query = connection.query('SELECT * FROM User WHERE role IS NOT NULL', function(err, rows1) {
-          var query = connection.query('SELECT User.id,User.username , User.NameE , User.LastNameE ,  User.email , org.nameE AS org , User.phone , User.message FROM User JOIN org ON User.org = org.org WHERE role IS NULL', function(err, rows2) {
-            var query = connection.query('SELECT user, actionType.nameE , DATE_FORMAT(timestamp, "%Y/%m/%d %H:%i:%S") AS timestamp FROM accessLogs INNER JOIN actionType ON accessLogs.action = actionType.action', function(err, userhistory) {
-              if (err) console.log("Error Selecting : %s ", err);
-              res.render('user', {
-                page_title: "user",
-                user: user,
-                data: rows1,
-                data1: rows2,
-                userhistory: userhistory
-              });
+          if (err) console.log("Error selecting User: %s ", err);
+          else {
+            var query = connection.query('SELECT User.id,User.username , User.NameE , User.LastNameE ,  User.email , org.nameE AS org , User.phone , User.message FROM User JOIN org ON User.org = org.org WHERE role IS NULL', function(err, rows2) {
+              if (err) console.log("Error selecting User: %s ", err);
+              else {
+                var query = connection.query('SELECT user, actionType.nameE , DATE_FORMAT(timestamp, "%Y/%m/%d %H:%i:%S") AS timestamp FROM accessLogs INNER JOIN actionType ON accessLogs.action = actionType.action', function(err, userhistory) {
+                  if (err) console.log("Error selecting accessLogs: %s ", err);
+                  else {
+                    res.render('user', {
+                      title: "User",
+                      user: user,
+                      data: rows1,
+                      data1: rows2,
+                      userhistory: userhistory
+                    });
+                  }
+                });
+              }
             });
-          });
+          }
         });
+        connection.release();
       });
     }
   }
 };
-//accept user
+
+//GET accept user
 var accept = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {
       var id = req.params.id;
-            // query User data
-            var Nametemp, Lastnametemp, Userid, Userpassword, Emailtemp = "";
-            var datatemp = connection.query("SELECT * FROM User WHERE id = ? ", [id], function(err, rows) {
-              if (err) {
-                console.log("Error reciving data : %s ", err);
-              } else {
-                datatemp = rows[0];
-                Nametemp = rows[0].NameE;
-                Lastnametemp = rows[0].LastNameE;
-                Userid = rows[0].username;
-                Userpassword = rows[0].password;
-                Emailtemp = rows[0].email;
-                console.log("data recived : %s ", err);
-              }
-            });
-            //
-            req.getConnection(function(err, connection) {
-              connection.query("UPDATE User SET role = 2 WHERE id = ? ", [id], function(err, rows) {
-                if (err) console.log("Error accept : %s ", err);
-                res.redirect('/user');
-              });
-                var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = 2', function(err, template) { //Query data from database
-                  if (!err) {
-                    var temp = template[0].Text.split("*").map(function(val) {
-                      return (val);
-                    });
-                        // send email notification
-                        transporter.sendMail({
-                          form: 'Uninet Express Lane Services Team',
-                          to: Emailtemp,
-                          subject: 'Uninet Express Lane',
-                          html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + Nametemp + ' ' + Lastnametemp + ', <br><br>' + temp[0] + Nametemp + temp[1] + Userid + temp[2] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                        });
-                        var logdata = {
-                            //logDate   : now(),
-                            Sender: user.username,
-                            Reciver: Userid + "(" + Emailtemp + ")",
-                            emailData: temp[0] + Nametemp + temp[1] + Userid + temp[2]
-                          };
-                        //save logs to database
-                        var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                          if (err) {
-                            console.log("Error when query logs : %s", err);
-                          } else {
-                            console.log("Log saved");
-                          }
-                        });
-                        //console.log(arr);
-                        console.log("Email was send ...");
-                      } else {
-                        console.log("Error query database ...");
-                        //connection.release();
-                      }
-                    });
-              });
+      req.getConnection(function(err, connection) {
+        connection.query("UPDATE User SET role = 2 WHERE id = ? ", [id], function(err, rows) {
+          if (err) console.log("Error accept : %s ", err);
+          else {
+            email_sender(2, id);
+            res.redirect('/user');
           }
-        }
-      };
-//submit edit user
-var saveedit = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
-    var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
+        }); 
+        connection.release();       
+      });
     }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
+  }
+};
+
+//GET submit edit user
+var saveedit = function(req, res) {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
+    var user = req.user;
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {
       var input = JSON.parse(JSON.stringify(req.body));
       var id = req.params.id;
       req.getConnection(function(err, connection) {
@@ -737,80 +597,88 @@ var saveedit = function(req, res) {
         };
         var query = connection.query("UPDATE User set ? WHERE id = ? ", [data, id], function(err, rows) {
           if (err) console.log("Error Updating : %s ", err);
-          res.redirect('/user');
+          else res.redirect('/user');
         });
+        connection.release();
       });
     }
   }
 };
-//edit user
-// var edit = function(req, res) {
-//   if (!req.isAuthenticated()) {
-//     res.redirect('/');
-//   } else {
-//     var user = req.user;
-//     if (user !== undefined) {
-//       user = user.toJSON();
-//     }
-//     if (user.role !== 1) {
-//       res.redirect('/');
-//     } else {
-//       var id = req.params.id;
-//       req.getConnection(function(err, connection) {
-//         var query = connection.query('SELECT * FROM User WHERE id = ?', [id], function(err, rows) {
-//           if (err) console.log("Error Selecting : %s ", err);
-//           res.render('edit', {
-//             page_title: "Edit",
-//             user: user,
-//             data: rows
-//           });
-//         });
-//       });
-//     }
-//   }
-// };
-//delete user
+
+//GET delete user
 var delete_user = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
-            //exports.list = function(req, res){
-              var id = req.params.id;
-            // query User data
-            var mailchecker = 0;
-            var Nametemp, Lastnametemp, Userid, Userpassword, Emailtemp = "";
-            var datatemp = connection.query("SELECT * FROM User WHERE id = ? ", [id], function(err, rows) {
-              if (err) {
-                console.log("Error reciving data : %s ", err);
-              } else {
-                Nametemp = rows[0].NameE;
-                Lastnametemp = rows[0].LastNameE;
-                Userid = rows[0].username;
-                Userpassword = rows[0].password;
-                Emailtemp = rows[0].email;
-                console.log("data recived : %s ", err);
-                    // delete user
-                    req.getConnection(function(err, connection) {
-                      connection.query("DELETE FROM User  WHERE id = ? ", [id], function(err, rows) {
-                        if (err) {
-                          console.log("Error deleting : %s ", err);
-                          console.log("Error query database ...");
-                        }
-                        res.redirect('/user');
-                      });
-                    });
-                  }
-                });
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {
+      var id = req.params.id;
+      req.getConnection(function(err, connection) {
+        var query = connection.query("DELETE FROM User WHERE id = ? ", [id], function(err, rows) {
+          if (err) console.log("Error deleting User: %s ", err);
+          else { 
+            email_sender(3, id);
+            res.redirect('/user');
           }
-        }
-      };
+        });
+        connection.release();
+      });
+    }
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-*-******************************************************************************************************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //cancel user request
 var cancel_user = function(req, res) {
   if (!req.isAuthenticated()) {
@@ -1003,7 +871,7 @@ var servicemanage = function(req, res, next) {
         var query = connection.query('SELECT User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime,ServiceActivityType.nameE FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user JOIN ServiceActivityType ON ServiceActivities.actType = ServiceActivityType.actType', function(err, state) {
           var query = connection.query('SELECT User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime,DATE_FORMAT(ServiceLogs.timestamp, "%Y/%m/%d %H:%i:%S") AS timestamp,ServiceActivityType.nameE  FROM ServiceLogs LEFT JOIN ServiceActivities ON ServiceLogs.said=ServiceActivities.said JOIN ResourceAllocated ON ResourceAllocated.said = ServiceLogs.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user JOIN ServiceActivityType ON ServiceLogs.actType = ServiceActivityType.actType', function(err, history) {
             var query = connection.query('SELECT ResourceAllocated.said, User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actType = 4', function(err, approve) {
-              var query = connection.query('SELECT ResourceAllocated.said, User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actbyuser != 1 and actType =0 ', function(err, request) {
+              var query = connection.query('SELECT ResourceAllocated.said, User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actbyuser != 1 and actType = 0 ', function(err, request) {
                 var query = connection.query('SELECT ActivePackage.apid,ActivePackage.username,ActivePackage.resourceString1,ActivePackage.resourceString2,ActivePackage.IP1,ActivePackage.IP2,DATE_FORMAT(ActivePackage.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ActivePackage.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ActivePackage', function(err, active) {
                   if (err) console.log("Error Selecting : %s ", err);
                   res.render('servicemanage', {
@@ -1679,10 +1547,10 @@ var signOut = function(req, res, next) {
   }
 };
 // Document PDF
-var pdf = function(req, res, next) {
+var pdf = function(req, res) {
   var file = __dirname + '/PDF/UniNet-Express-Guildline.pdf';
-    res.download(file); // Set disposition and send it.
-  };
+  res.download(file); // Set disposition and send it.
+};
 
 // <<--- BEGIN REST API Dev --->>
 // add request
@@ -1834,37 +1702,44 @@ var delete_rest_service = function(req, res, next) {
 // ADDITION EMAIL SENDER
 function email_sender(email_id, user_id) { //RETURN callback-> 0 (NOT OK) or 1 (OK)
   var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = ?', email_id, function(err, template) {
-    if (!err) {
-      var temp = template[0].Text;
+    if (err) console.log("Error selecting EmailTemplates: %s", err);    
+    else {
       var userdata = connection.query('SELECT * FROM User WHERE id = ?', user_id, function(err, userdata) {
-        if (!err) {
-                    // send email notification
-                    transporter.sendMail({
-                      form: 'Uninet Express Lane Services Team',
-                      to: userdata[0].email,
-                      subject: 'Uninet Express Lane',
-                      html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + temp + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                    });
-                    // save email log
-                    var logdata = {
-                        //logDate   : now(),
-                        Sender: "Auto Sender",
-                        Reciver: userdata[0].username + "(" + userdata[0].email + ")",
-                        emailData: temp
-                      };
-                      var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                        if (err) {
-                          console.log("Error when query logs : %s", err);
-                        } else {
-                          console.log("Log saved");
-                        }
-                      });
-                    } else {
-                      console.log("Error when query logs : %s", err);
-                    }
-                  });
-    } else {
-      console.log("Error when query logs : %s", err);
+        if (err) console.log("Error selecting User: %s", err);
+        else {
+          var html_text;
+          var email_data;
+          if (email_id == 2) {
+            var email_text = template[0].Text.split("*").map(function(val) {
+              return (val);
+            });
+            email_data = email_text[0] + userdata[0].NameE + email_text[1] + userdata[0].username + email_text[2]; 
+            html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + email_text[0] + userdata[0].NameE + email_text[1] + userdata[0].username + email_text[2] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
+          } else {
+            email_data = template[0].Text;
+            html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + email_data + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
+          }
+          // send email notification
+          transporter.sendMail({
+            form: 'Uninet Express Lane Services Team',
+            to: userdata[0].email,
+            subject: 'Uninet Express Lane Service',
+            html: html_text,
+          });
+          // save email log
+          var logdata = {
+            Sender: "Auto Sender",
+            Reciver: userdata[0].username + "(" + userdata[0].email + ")",
+            emailData: email_data
+          };
+          var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
+            if (!err) console.log("Log saved");
+            else {
+              console.log("Error inserting EmailLogs: %s", err);
+            }
+          });
+        }
+      });
     }
   });
 }
@@ -1877,8 +1752,6 @@ function ReportError(res, err) {
   res.set('Content-Type', 'application/json');
   res.send(errMsg);
 }
-
-connection.end();
 
 // export functions
 /**************************************/
@@ -1894,12 +1767,8 @@ module.exports.profile = profile;
 module.exports.repass = repass
 module.exports.repasspost = repasspost
 //content
-module.exports.about = about;
-module.exports.contact = contact;
 module.exports.status = status;
 module.exports.service = service;
-module.exports.document = document;
-// module.exports.graph = graph;
 //memberaction
 module.exports.serviceac = serviceac;
 module.exports.addServiceac = addServiceac;
@@ -1935,7 +1804,6 @@ module.exports.signInPost = signInPost;
 module.exports.signUp = signUp;
 // POST
 module.exports.signUpPost = signUpPost;
-module.exports.statusPost = statusPost;
 // sign out
 module.exports.signOut = signOut;
 module.exports.pdf = pdf;

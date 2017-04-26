@@ -85,15 +85,12 @@ app.use(connection(mysql, {
 //index
 app.get('/', route.index, route.check);
 //profile
-app.get('/profile', route.profile); ///////////
+app.get('/profile', route.profile);
 //repassword
 app.get('/repass', route.repass);
 app.post('/repass', route.repasspost); 
 //project information
-// app.get('/about', route.about);
-// app.get('/contact', route.contact);
 app.get('/service', route.service);
-// app.get('/document', route.document);
 //status node
 app.get('/status', route.status);
 // signin
