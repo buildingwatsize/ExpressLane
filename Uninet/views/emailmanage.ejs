@@ -105,28 +105,26 @@
 							<% if(data.length){
 								for(var i = 0;i < data.length;i++) { %>
 									<div id="edit<%=data[i].id%>" class="modal fade" role="dialog">
-										<div class="modal-dialog">
-											<div class="modal-content">
-												<div class="modal-body">
-													<h4>
-														<form action="/emailmanage/mailedit/<%=data[i].id%>" method="post">
-															<div class="form-group">
-																<label><font color="red">*</font> ID</label>
-																<input type="text" class="form-control" name="id" id="id" placeholder="id" value="<%=data[i].id%>" required="true">
-															</div>
-															<div class="form-group" >
-																<label><font color="red">*</font> Text</label>
-																<textarea type="text" class="form-control" name="Text" id="Text" placeholder="Text" value="<%=data[i].Text%>" required="true" rows="10"><%=data[i].Text%></textarea>
-															</div>
-														</form>
-													</h4>
-												</div>
-												<div class="modal-footer">
-													<button type="submit" class="btn btn-success" value="save">Save</button>
-													<button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
-												</div>
-											</div><!-- modal-content -->
-										</div><!-- modal-dialog -->
+										<form action="/emailmanage/mailsave/<%=data[i].id%>" method="post">
+											<div class="modal-dialog">
+												<div class="modal-content">
+													<div class="modal-body">
+														<div class="form-group">
+															<label><font color="red">*</font> ID</label>
+															<input type="text" class="form-control" name="id" id="id" placeholder="id" value="<%=data[i].id%>" required="true">
+														</div>
+														<div class="form-group" >
+															<label><font color="red">*</font> Text</label>
+															<textarea type="text" class="form-control" name="Text" id="Text" placeholder="Text" value="<%=data[i].Text%>" required="true" rows="10"><%=data[i].Text%></textarea>
+														</div>
+													</div>
+													<div class="modal-footer">
+														<button type="submit" class="btn btn-success" value="save">Save</button>
+														<button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+													</div>
+												</div><!-- modal-content -->
+											</div><!-- modal-dialog -->
+										</form>
 									</div><!-- editID -->
 								<% }%><!-- endfor -->
 							<% } %><!-- endif -->

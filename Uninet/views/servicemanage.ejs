@@ -431,77 +431,7 @@
     <% }
   } %>
 
-  <% if(active.length){ 
-    for(var i = 0;i < active.length;i++) { %>
-    <div id="EditActiveModal<%=active[i].apid%>" class="modal fade" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form action="/servicemanage/edit/<%=active[i].apid%>" method="post" onsubmit="return checkForm(this);">
-            
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal">&times;</button>
-              <h3><center> Edit Active Service </center></h3>
-            </div>
-
-            <div class="modal-body">  
-              <div id="alert" class="hide" role="alert"></div>
-              <div class="form-group">
-                <label>Source MAC Address</label>
-                <input type="text" class="form-control" name="resourceString1"  id="resourceString1" placeholder="resourceString1" value="<%=active[i].resourceString1%>" required="true">
-              </div>
-
-              <div class="form-group">
-                <label>Destination MAC Address</label>
-                <input type="text" class="form-control" name="resourceString2" id="resourceString2" placeholder="resourceString2" value="<%=active[i].resourceString2%>" required="true">
-              </div>
-
-              <div class="form-group">
-                <label>Source IP Address</label>
-                <input type="text" class="form-control" name="IP1"  id="IP1" placeholder="IP1" value="<%=active[i].IP1%>" required="true">
-              </div>
-
-              <div class="form-group">
-                <label>Destination IP Address</label>
-                <input type="text" class="form-control" name="IP2" id="IP2" placeholder="IP2" value="<%=active[i].IP2%>" required="true">
-              </div>
-
-              <div class="form-group">
-                <label>Duration of services</label>
-                <div class="input-daterange" id="datePickerEdit">
-                  <input type="text" style="text-align: center;" name="startTime" id="startTime" value="<%=active[i].endTime %>" placeholder="YYYY/MM/DD hh:mm" size="17" >
-                  &nbsp;to&nbsp;
-                  <input type="text" style="text-align: center;" name="endTime" id="endTime" value="<%=active[i].endTime %>" placeholder="YYYY/MM/DD hh:mm" size="17">
-                  &nbsp;&nbsp;<span class="fa fa-calendar"></span>
-                </div>
-              </div> 
-            </div>
-
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-success btn-md" value="addService" >Submit</button> 
-              <button type="button" class="btn btn-danger btn-md" data-dismiss="modal">Cancel</button> 
-            </div>  
-          </form>
-        </div>
-      </div>
-    </div>  
-    <% }
-    for(var i = 0;i < active.length;i++) { %>
-      <div id="CancleActiveModal<%=active[i].apid%>" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal">&times;</button>
-              <h3><center> Are You Sure? </center></h3>
-            </div>
-            <div class="modal-footer">
-              <a class="btn btn-success" href="/servicemanage/deleteactive/<%=active[i].apid%>">Delete</a>
-              <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
-            </div>
-          </div>
-        </div>
-      </div> 
-    <% }
-  }%>
+  
 
   <div class="modal fade" id="AddModal" role="dialog">
     <div class="modal-dialog">
@@ -547,7 +477,7 @@
           </div>
 
           <div class="modal-footer">
-            <button type="submit" class="btn btn-success btn-md" value="addService" >Submit</button> 
+            <button type="submit" class="btn btn-success btn-md" value="addService">Submit</button> 
             <button type="button" class="btn btn-danger btn-md" data-dismiss="modal">Cancel</button> 
           </div>
 
@@ -555,6 +485,79 @@
       </div>
     </div>
   </div>
+
+  <% if(active.length){ 
+    for(var i = 0;i < active.length;i++) { %>
+      <div id="EditActiveModal<%=active[i].apid%>" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form action="/servicemanage/edit/<%=active[i].apid%>" method="post" onsubmit="return checkForm(this);">
+              
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h3><center> Edit Active Service </center></h3>
+              </div>
+
+              <div class="modal-body">  
+                <div id="alert" class="hide" role="alert"></div>
+                <div class="form-group">
+                  <label>Source MAC Address</label>
+                  <input type="text" class="form-control" name="resourceString1"  id="resourceString1" placeholder="resourceString1" value="<%=active[i].resourceString1%>" required="true">
+                </div>
+
+                <div class="form-group">
+                  <label>Destination MAC Address</label>
+                  <input type="text" class="form-control" name="resourceString2" id="resourceString2" placeholder="resourceString2" value="<%=active[i].resourceString2%>" required="true">
+                </div>
+
+                <div class="form-group">
+                  <label>Source IP Address</label>
+                  <input type="text" class="form-control" name="IP1"  id="IP1" placeholder="IP1" value="<%=active[i].IP1%>" required="true">
+                </div>
+
+                <div class="form-group">
+                  <label>Destination IP Address</label>
+                  <input type="text" class="form-control" name="IP2" id="IP2" placeholder="IP2" value="<%=active[i].IP2%>" required="true">
+                </div>
+
+                <div class="form-group">
+                  <label>Duration of services</label>
+                  <div class="input-daterange" id="datePickerEdit<%=i%>">
+                    <input type="text" style="text-align: center;" name="startTime" id="startTime" value="<%=active[i].startTime %>" placeholder="YYYY/MM/DD hh:mm:ss" size="17" required="true">
+                    &nbsp;to&nbsp;
+                    <input type="text" style="text-align: center;" name="endTime" id="endTime" value="<%=active[i].endTime %>" placeholder="YYYY/MM/DD hh:mm:ss" size="17" required="true">
+                    &nbsp;&nbsp;<span class="fa fa-calendar"></span>
+                  </div>
+                </div> 
+              </div>
+
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-success btn-md" value="editService">Submit</button> 
+                <button type="button" class="btn btn-danger btn-md" data-dismiss="modal">Cancel</button> 
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>  
+    <% }
+    for(var i = 0;i < active.length;i++) { %>
+      <div id="CancleActiveModal<%=active[i].apid%>" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              <h3><center> Are You Sure? </center></h3>
+            </div>
+            <div class="modal-footer">
+              <a class="btn btn-success" href="/servicemanage/deleteactive/<%=active[i].apid%>">Delete</a>
+              <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div> 
+    <% }
+  }%>
   <!-- End Modal dialog -->
 
   <footer id="footer">
@@ -572,6 +575,7 @@
   <script type="text/javascript">
     var startTime;
     var endTime;
+    var num_active = <%=active.length%>;
     $(document).ready(function($) {      
       $('#servicesrequest').dataTable({
           "pagingType": "full_numbers"
@@ -587,19 +591,7 @@
       });
       $('#historytable').dataTable({
           "pagingType": "full_numbers"
-      });
-      $('#datePickerEdit').daterangepicker({
-        timePicker: true,
-        timePicker24Hour: true,
-          locale: {
-              format: 'YYYY/MM/DD HH:mm:ss'
-          }
-        }, function(start, end) {
-          $('#reportrange span').html(start.format('YYYY/MM/DD HH:mm:ss') + ' - ' + end.format('YYYY/MM/DD HH:mm:ss'));
-          document.getElementById("startTime").value = start.format('YYYY/MM/DD HH:mm:ss');
-          document.getElementById("endTime").value = end.format('YYYY/MM/DD HH:mm:ss');
-        }
-      );  
+      });      
       $('#datePickerNewXL').daterangepicker({
         timePicker: true,
         timePicker24Hour: true,
@@ -611,7 +603,23 @@
           document.getElementById("startTimeByAdmin").value = start.format('YYYY/MM/DD HH:mm:ss');
           document.getElementById("endTimeByAdmin").value = end.format('YYYY/MM/DD HH:mm:ss');
         }
-      );  
+      ); 
+      var item;
+      for (var i = 0; i < num_active; i++) {
+        item = '#datePickerEdit'+i;
+        $(item).daterangepicker({
+          timePicker: true,
+          timePicker24Hour: true,
+            locale: {
+                format: 'YYYY/MM/DD HH:mm:ss'
+            }
+          }, function(start, end) {
+            $('#reportrange span').html(start.format('YYYY/MM/DD HH:mm:ss') + ' - ' + end.format('YYYY/MM/DD HH:mm:ss'));
+            document.getElementById("startTime").value = start.format('YYYY/MM/DD HH:mm:ss');
+            document.getElementById("endTime").value = end.format('YYYY/MM/DD HH:mm:ss');
+          }
+        ); 
+      }      
     });
   </script>
 
