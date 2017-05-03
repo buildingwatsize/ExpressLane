@@ -17,7 +17,6 @@ var connection = mysql.createConnection({ //database setting
   });
 connection.connect();
 
-var queryString = 'SELECT Text FROM EmailTemplates'; // query template SQL data
 var nodemailer = require('nodemailer'); //nodemailler
 var transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -490,13 +489,8 @@ var addServiceac = function(req, res) {
                           var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,0 FROM ServiceActivities WHERE said = ?", said_query_parsed[0].said, function(err) {
                             if (err) console.log("Error inserting ServiceLogs: %s ", err);
                             else {
-                              var query = connection.query('SELECT * FROM User WHERE id = ?', [user.id], function(err, user_query) {
-                                if (err) console.log("Error selecting User: %s ", err);
-                                else {
-                                  email_sender(5, user_query[0].id);
-                                  res.redirect('/serviceac');
-                                }
-                              });
+                              email_sender(5, user.id);
+                              res.redirect('/serviceac');
                             }
                           });
                         }
@@ -628,295 +622,162 @@ var delete_user = function(req, res) {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--*-******************************************************************************************************************************************************************
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //cancel user request
 var cancel_user = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
-            //exports.list = function(req, res){
-              var id = req.params.id;
-            // query User data
-            var mailchecker = 0;
-            var Nametemp, Lastnametemp, Userid, Userpassword, Emailtemp = "";
-            var datatemp = connection.query("SELECT * FROM User WHERE id = ? ", [id], function(err, rows) {
-              if (err) {
-                console.log("Error reciving data : %s ", err);
-              } else {
-                Nametemp = rows[0].NameE;
-                Lastnametemp = rows[0].LastNameE;
-                Userid = rows[0].username;
-                Userpassword = rows[0].password;
-                Emailtemp = rows[0].email;
-                console.log("data recived : %s ", err);
-                    //Send Email
-                    var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = 3', function(err, template) { //Query data from database
-                      if (!err) {
-                        mailchecker = 1;
-                        var temp = template[0].Text
-                                // send email notification
-                                transporter.sendMail({
-                                  form: 'Uninet Express Lane Services Team',
-                                  to: Emailtemp,
-                                  subject: 'Uninet Express Lane',
-                                  html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + Nametemp + ' ' + Lastnametemp + ', <br><br>' + temp + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                                });
-                            //log data
-                            var logdata = {
-                                //logDate   : now(),
-                                Sender: user.username,
-                                Reciver: Userid + "(" + Emailtemp + ")",
-                                emailData: temp
-                              };
-                            //save logs to database
-                            var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                              if (err) {
-                                console.log("Error when query logs : %s", err);
-                              } else {
-                                console.log("Log saved");
-                              }
-                            });
-                            // delete user
-                            if (mailchecker == 1) {
-                              req.getConnection(function(err, connection) {
-                                connection.query("DELETE FROM User  WHERE id = ? ", [id], function(err, rows) {
-                                  if (err) console.log("Error deleting : %s ", err);
-                                  res.redirect('/user');
-                                });
-                                    //console.log(query.sql);
-                                  });
-                            }
-                            //console.log(arr);
-                            console.log("Email was send ...");
-                          } else {
-                            console.log("Error query database ...");
-                            //connection.release();
-                          }
-                        });
-                  }
-                });
-          }
-        }
-      };
-// mail management -- query data  (template & logs)
-var emailmanage = function(req, res, next) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
-    var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
-      req.getConnection(function(err, connection) {
-        var query = connection.query('SELECT * FROM EmailTemplates', function(err, template) {
-          if (!err) {
-                        var query = connection.query("SELECT Sender, Reciver, emailData, DATE_FORMAT(logDate, '%Y/%m/%d %H:%i:%s') AS logDate FROM EmailLogs ", function(err, logs) { //ORDER BY logDate DESC
-                          if (!err) {
-                            res.render('emailmanage', {
-                              page_title: "Email Management",
-                              user: user,
-                              data: template,
-                              logs: logs
-                            });
-                          } else {
-                            console.log("Error Selecting : %s ", err);
-                          }
-                        });
-                      } else {
-                        console.log("Error Selecting : %s ", err);
-                      }
-                    });
-      });
-    }
-  }
-};
-//mail edit
-var mailedit = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
-    var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/emailmanage');
-    } else {
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {
       var id = req.params.id;
       req.getConnection(function(err, connection) {
-        var query = connection.query('SELECT * FROM EmailTemplates WHERE id = ?', [id], function(err, template) {
-          if (err) console.log("Error Selecting : %s ", err);
-          res.render('mailedit', {
-            page_title: "Edit Email template",
-            user: user,
-            data: template
-          });
+        var query = connection.query("DELETE FROM User WHERE id = ? ", [id], function(err, rows) {
+          if (err) console.log("Error deleting User: %s ", err);
+          else { 
+            email_sender(3, id);
+            res.redirect('/user');
+          }
         });
+        connection.release();
       });
     }
   }
 };
+
+// mail management -- query data  (template & logs)
+var emailmanage = function(req, res, next) {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
+    var user = req.user;
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {
+      req.getConnection(function(err, connection) {
+        var query = connection.query('SELECT * FROM EmailTemplates', function(err, template) {
+          if (err) console.log("Error selecting EmailTemplates: %s ", err);
+          else {
+            var query = connection.query("SELECT Sender, Reciver, emailData, DATE_FORMAT(logDate, '%Y/%m/%d %H:%i:%s') AS logDate FROM EmailLogs ", function(err, logs) {
+              if (err) console.log("Error selecting EmailLogs: %s ", err);
+              else {
+                res.render('emailmanage', {
+                  title: "Email Management",
+                  user: user,
+                  data: template,
+                  logs: logs
+                });
+              }
+            });
+          }
+        });
+        connection.release();
+      });
+    }
+  }
+};
+
 // save email template
 var mailsave = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/emailmanage');
-    } else {
-      var input = JSON.parse(JSON.stringify(req.body));
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {      
+      var input = JSON.parse(JSON.stringify(req.body));      
       var id = req.params.id;
       req.getConnection(function(err, connection) {
         var data = {
-          id: input.id,
+          id: id,
           Text: input.Text
         };
         var query = connection.query("UPDATE EmailTemplates set ? WHERE id = ?  ", [data, id], function(err, template) {
-          if (err) {
-            console.log("Error Updating : %s ", err)
-          };
-                    // update email template
-                    emaildata = connection.query(queryString, function(err, result) { //Query data from database
-                      if (!err) {
-                            //connection.release();
-                            console.log("Email template was Updated ...");
-                          } else {
-                            console.log("Error query database ...");
-                            //connection.release();
-                          }
-                        });
-                    res.redirect('/emailmanage');
-                  });
+          if (err) console.log("Error updating EmailTemplates: %s ", err)
+          else {
+            console.log("Email template was Updated");
+            res.redirect('/emailmanage');
+          }
+        });
+        connection.release();
       });
     }
   }
 };
+
 //service management
-var servicemanage = function(req, res, next) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+var servicemanage = function(req, res) {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {      
+
+      /// DELETE OLD SERVICE WHICH EXPIRED ///
+
       req.getConnection(function(err, connection) {
         var query = connection.query('SELECT User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime,ServiceActivityType.nameE FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user JOIN ServiceActivityType ON ServiceActivities.actType = ServiceActivityType.actType', function(err, state) {
-          var query = connection.query('SELECT User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime,DATE_FORMAT(ServiceLogs.timestamp, "%Y/%m/%d %H:%i:%S") AS timestamp,ServiceActivityType.nameE  FROM ServiceLogs LEFT JOIN ServiceActivities ON ServiceLogs.said=ServiceActivities.said JOIN ResourceAllocated ON ResourceAllocated.said = ServiceLogs.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user JOIN ServiceActivityType ON ServiceLogs.actType = ServiceActivityType.actType', function(err, history) {
-            var query = connection.query('SELECT ResourceAllocated.said, User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actType = 4', function(err, approve) {
-              var query = connection.query('SELECT ResourceAllocated.said, User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actbyuser != 1 and actType = 0 ', function(err, request) {
-                var query = connection.query('SELECT ActivePackage.apid,ActivePackage.username,ActivePackage.resourceString1,ActivePackage.resourceString2,ActivePackage.IP1,ActivePackage.IP2,DATE_FORMAT(ActivePackage.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ActivePackage.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ActivePackage', function(err, active) {
-                  if (err) console.log("Error Selecting : %s ", err);
-                  res.render('servicemanage', {
-                    page_title: "servicemanage",
-                    active: active,
-                    request: request,
-                    user: user,
-                    history: history,
-                    state: state,
-                    approve: approve
-                  });
+          if (err) console.log("Error selecting State: %s", err);
+          else { 
+            var query = connection.query('SELECT User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime,DATE_FORMAT(ServiceLogs.timestamp, "%Y/%m/%d %H:%i:%S") AS timestamp,ServiceActivityType.nameE  FROM ServiceLogs LEFT JOIN ServiceActivities ON ServiceLogs.said=ServiceActivities.said JOIN ResourceAllocated ON ResourceAllocated.said = ServiceLogs.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user JOIN ServiceActivityType ON ServiceLogs.actType = ServiceActivityType.actType', function(err, history) {
+              if (err) console.log("Error selecting History: %s", err);
+              else { 
+                var query = connection.query('SELECT ResourceAllocated.said, User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actType = 4', function(err, approve) {
+                  if (err) console.log("Error selecting Approve: %s", err);
+                  else { 
+                    var query = connection.query('SELECT ResourceAllocated.said, User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actbyuser != 1 and actType = 0 ', function(err, request) {
+                      if (err) console.log("Error selecting Request: %s", err);
+                      else { 
+                        var query = connection.query('SELECT ActivePackage.apid,ActivePackage.username,ActivePackage.resourceString1,ActivePackage.resourceString2,ActivePackage.IP1,ActivePackage.IP2,DATE_FORMAT(ActivePackage.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ActivePackage.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ActivePackage', function(err, active) {
+                          if (err) console.log("Error selecting Active: %s ", err);
+                          else {
+                            res.render('servicemanage', {
+                              title: "Service Management",
+                              active: active,
+                              request: request,
+                              user: user,
+                              history: history,
+                              state: state,
+                              approve: approve
+                            });
+                          }
+                        });
+                      }
+                    });
+                  }
                 });
-              });
+              }
             });
-          });
+          }
         });
+        connection.release();
       });
     }
   }
-  next();
 };
 
 //add service for admin
-var addService = function(req, res, next) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+var addService = function(req, res) {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else { 
       var input = JSON.parse(JSON.stringify(req.body));
       req.getConnection(function(err, connection) {
         var query = connection.query("SELECT id FROM User WHERE username = 'admin' ", function(err, admin_id) {
-          if (!err) {
+          if (err) console.log("Error query id: %s ", err);
+          else {
             var admin_id_json = JSON.stringify(admin_id);
             var admin_id_parsed = JSON.parse(admin_id_json);  
             var id = admin_id_parsed[0].id;
             var query = connection.query("INSERT INTO ServiceRequests set user = ? ", id, function(err) {
-              if (!err) {
+              if (err) console.log("Error inserting ServiceRequests: %s ", err);
+              else {
                 var query = connection.query("SELECT sid From ServiceRequests WHERE user = ? Order By ServiceRequests.sid Desc LIMIT 1", id, function(err, rows_sid) {
-                  if (!err) {
+                  if (err) console.log("Error selecting ServiceActivities: %s ", err);
+                  else {
                     var rows_sid_json = JSON.stringify(rows_sid);
                     var rows_sid_parsed = JSON.parse(rows_sid_json);
                     var data_serviceac = {
@@ -925,9 +786,11 @@ var addService = function(req, res, next) {
                       actbyuser: 0
                     };
                     var query = connection.query("INSERT INTO ServiceActivities SET ?", data_serviceac, function(err) {
-                      if (!err) {
+                      if (err) console.log("Error inserting ServiceActivities: %s ", err);
+                      else {
                         var query = connection.query("SELECT said From ServiceActivities Order By said Desc LIMIT 1", function(err, select_said) {
-                          if (!err) {
+                          if (err) console.log("Error selecting ServiceActivities: %s ", err);
+                          else {
                             var select_said_json = JSON.stringify(select_said);
                             select_said_parsed = JSON.parse(select_said_json);
                             var data = {                              
@@ -942,23 +805,25 @@ var addService = function(req, res, next) {
                               endTime: input.endTimeByAdmin,
                             };
                             var query = connection.query("INSERT INTO ResourceAllocated SET ? ", data, function(err) {
-                              if (!err) {
+                              if (err) console.log("Error inserting to DB: %s ", err); 
+                              else {
                                 var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,0 FROM ServiceActivities WHERE said = ?", select_said_parsed[0].said, function(err) {  
-                                  if (!err) res.redirect('/servicemanage');
-                                  else console.log("Error saved log: %s ", err);
+                                  if (err) console.log("Error saved log: %s ", err);
+                                  else res.redirect('/servicemanage');
                                 });
-                              } else console.log("Error inserting to DB: %s ", err);
+                              } 
                             });
-                          } else console.log("Error selecting ServiceActivities: %s ", err);
+                          }
                         });
-                      } else console.log("Error inserting ServiceActivities: %s ", err);
+                      }
                     });
-                  } else console.log("Error selecting ServiceActivities: %s ", err);
+                  } 
                 });                
-              } else console.log("Error inserting ServiceRequests: %s ", err);
+              }
             });
-          } else console.log("Error query id: %s ", err);
+          }
         });
+        connection.release();
       });
     }
   }
@@ -966,142 +831,96 @@ var addService = function(req, res, next) {
 
 //approve service request
 var accept_service = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
-            // add ip from addmin
-            var input = JSON.parse(JSON.stringify(req.body));
-            var id = req.params.id;
-            req.getConnection(function(err, connection) {
-              var Nametemp, Lastnametemp, Emailtemp, SAID, startTime, endTime = '';
-              var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE ResourceAllocated.said = ?', [id], function(err, rows) {
-                Userid = rows[0].username;
-                Nametemp = rows[0].NameE;
-                Lastnametemp = rows[0].LastNameE;
-                Emailtemp = rows[0].email;
-                SAID = rows[0].said;
-                startTime = rows[0].startTime;
-                endTime = rows[0].endTime;
-                IP1 = rows[0].IP1;
-                IP2 = rows[0].IP2;
-                var data = {
-                  said: rows[0].said,
-                  username: rows[0].username,
-                  resourceString1: rows[0].resourceString1,
-                  resourceString2: rows[0].resourceString2,
-                  IP1: rows[0].IP1,
-                  IP2: rows[0].IP2,
-                  startTime: rows[0].startTime,
-                  endTime: rows[0].endTime
-                };
-                connection.query("UPDATE ResourceAllocated SET IP1 = ?, IP2 = ? WHERE said = ? ", [IP1, IP2, SAID], function(err) {
-                  if (err) console.log("Error accept : %s ", err);
-                });
-                    //Service Actived
-                    if (rows[0].startTime <= new Date()) {
-                      var query = connection.query("INSERT INTO ActivePackage SET ?", data, function(err, rows) {
-                        var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,7 FROM ServiceActivities WHERE said = ?", [id], function(err) {
-                          connection.query("UPDATE ServiceActivities SET actType = 7 WHERE said = ? ", [id], function(err, rows) {
-                            if (err) console.log("Error accept : %s ", err);
-                            res.redirect('/servicemanage');
-                          });
-                        });
-                      });
-                        //Service Approved
-                      } else {
-                        var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,4 FROM ServiceActivities WHERE said = ?", [id], function(err) {
-                          connection.query("UPDATE ServiceActivities SET actType = 4 WHERE said = ? ", [id], function(err, rows) {
-                            if (err) console.log("Error accept : %s ", err);
-                            res.redirect('/servicemanage');
-                          });
-                            //send email function
-                            var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = 6', function(err, template) { //Query data from database
-                              if (!err) {
-                                var temp = template[0].Text.split("*").map(function(val) {
-                                  return (val);
-                                });
-                                    // send email notification
-                                    transporter.sendMail({
-                                      form: 'Uninet Express Lane Services Team',
-                                      to: Emailtemp,
-                                      subject: 'Uninet Express Lane',
-                                      html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + Nametemp + ' ' + Lastnametemp + ', <br><br>' + temp[0] + SAID + temp[1] + IP1 + temp[2] + IP2 + temp[3] + startTime + temp[4] + endTime + temp[5] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                                    });
-                                    //log data
-                                    var logdata = {
-                                        //logDate   : now(),
-                                        Sender: user.username,
-                                        Reciver: Userid + "(" + Emailtemp + ")",
-                                        emailData: temp[0] + SAID + temp[1] + IP1 + temp[2] + IP2 + temp[3] + startTime + temp[4] + endTime + temp[5]
-                                            //emailData     : temp[0]+SAID+temp[1]+IP+temp[2]+ startTime+temp[3]+ endTime+temp[4]
-                                          };
-                                    //save logs to database
-                                    var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                                      if (err) {
-                                        console.log("Error when query logs : %s", err);
-                                      } else {
-                                        console.log("Log saved");
-                                      }
-                                    });
-                                    //console.log(arr);
-                                    console.log("Email was send ...");
-                                  } else {
-                                    console.log("Error query database ...");
-                                    //connection.release();
-                                  }
-                                });
-                          });
-                      }
-                    });
-});
-}
-}
-};
-//edit service active for admin
-var edit_service = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
-    var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
-      var id = req.params.apid;
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {  
+      var input = JSON.parse(JSON.stringify(req.body));
+      var id = req.params.id;
       req.getConnection(function(err, connection) {
-        var query = connection.query('SELECT * FROM ActivePackage WHERE apid = ?', [id], function(err, rows) {
-          if (err) console.log("Error Selecting : %s ", err);
-          res.render('edit', {
-            page_title: "Edit",
-            user: user,
-            data: rows
-          });
+        var SAID, IP1, IP2, IDUser = '';
+        var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE ResourceAllocated.said = ?', [id], function(err, result) {
+          if (err) console.log("Error selecting ResourceAllocated: %s ", err);
+          else {
+            SAID = result[0].said;
+            IP1 = result[0].IP1;
+            IP2 = result[0].IP2;
+            IDUser = result[0].id;
+            var data = {
+              said: result[0].said,
+              username: result[0].username,
+              resourceString1: result[0].resourceString1,
+              resourceString2: result[0].resourceString2,
+              IP1: result[0].IP1,
+              IP2: result[0].IP2,
+              startTime: result[0].startTime,
+              endTime: result[0].endTime
+            };
+
+            //Update IP1 and IP2
+            var query = connection.query("UPDATE ResourceAllocated SET IP1 = ?, IP2 = ? WHERE said = ? ", [IP1, IP2, SAID], function(err) {
+              if (err) console.log("Error updating ResourceAllocated (accept): %s ", err);
+            });
+
+            //Service Actived
+            if (result[0].startTime <= new Date()) {
+              var query = connection.query("INSERT INTO ActivePackage SET ?", data, function(err, rows) {
+                if (err) console.log("Error inserting ActivePackage: %s ", err);
+                else {
+                  var query = connection.query("UPDATE ServiceActivities SET actType = 7 WHERE said = ? ", [id], function(err, rows) {
+                    if (err) console.log("Error updating ServiceActivities: %s ", err);
+                    else {
+                      var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,7 FROM ServiceActivities WHERE said = ?", [id], function(err) {
+                        if (err) console.log("Error inserting ServiceLogs: %s ", err);
+                        else res.redirect('/servicemanage');
+                      });
+                    }
+                  });
+                }
+              });          
+            } else {
+              //Service Approved
+              var query = connection.query("UPDATE ServiceActivities SET actType = 4 WHERE said = ? ", [id], function(err, rows) {
+                if (err) console.log("Error updating ServiceActivities: %s ", err);
+                else {
+                  var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,4 FROM ServiceActivities WHERE said = ?", [id], function(err) {
+                    if (err) console.log("Error inserting ServiceLogs: %s ", err);
+                    else {                    
+                      res.redirect('/servicemanage');
+                    }
+                  });
+                }
+              });
+            }
+            //Email & Saved Log
+            var infomation = {
+              NameUser: result[0].NameE,
+              LastnameUser: result[0].LastNameE,
+              SAID: result[0].said,
+              startTime: result[0].startTime,
+              endTime: result[0].endTime,
+              IP1: result[0].IP1,
+              IP2: result[0].IP2  
+            };              
+            email_sender(6, IDUser, infomation);              
+          } 
         });
+        connection.release();
       });
     }
   }
 };
+
 //submit edit service for admin
 var saveedit_service = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/memberindex');
-    } else {
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {  
       var input = JSON.parse(JSON.stringify(req.body));
       var id = req.params.id;
       req.getConnection(function(err, connection) {
@@ -1114,262 +933,137 @@ var saveedit_service = function(req, res) {
           endTime: input.endTime
         };
         var query = connection.query("UPDATE ActivePackage SET ? WHERE apid = ? ", [data, id], function(err, rows) {
-          if (err) console.log("Error Updating : %s ", err);
-          res.redirect('/servicemanage');
+          if (err) console.log("Error updating ActivePackage: %s ", err);
+          else res.redirect('/servicemanage');
         });
+        connection.release();
       });
     }
   }
 };
-//cancel service requested
+
+//delete service requested
 var delete_service = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
-            //exports.list = function(req, res){
-              var id = req.params.id;
-              req.getConnection(function(err, connection) {
-                var Nametemp, Lastnametemp, Emailtemp, SAID, startTime, endTime = '';
-                var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE ResourceAllocated.said = ?', [id], function(err, rows) {
-                  Nametemp = rows[0].NameE;
-                  Lastnametemp = rows[0].LastNameE;
-                  Userid = rows[0].username;
-                  Emailtemp = rows[0].email;
-                  SAID = rows[0].said;
-                  startTime = rows[0].startTime;
-                  endTime = rows[0].endTime;
-                  console.log("recived Data");
-                });
-                var mailchecker = 0;
-                //send email function
-                var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = 7', function(err, template) { //Query data from database
-                  mailchecker = 1;
-                  if (!err) {
-                    var temp = template[0].Text
-                            // send email notification
-                            transporter.sendMail({
-                              form: 'Uninet Express Lane Services Team',
-                              to: Emailtemp,
-                              subject: 'Uninet Express Lane',
-                              html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + Nametemp + ' ' + Lastnametemp + ', <br><br>' + temp + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                            });
-                        //log data
-                        var logdata = {
-                            //logDate   : now(),
-                            Sender: Nametemp,
-                            Reciver: Userid + "(" + Emailtemp + ")",
-                            emailData: temp
-                          };
-                        //save logs to database
-                        var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                          if (err) {
-                            console.log("Error when query logs : %s", err);
-                          } else {
-                            console.log("Log saved");
-                          }
-                        });
-                        if (mailchecker == 1) {
-                          var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,2 FROM ServiceActivities WHERE said = ?", [id], function(err) {
-                            connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ServiceActivities.said = ResourceAllocated.said SET actType = 2 , actbyuser=1 WHERE ServiceActivities.said = ?", [id], function(err, rows) {
-                              if (err) console.log("Error deleting : %s ", err);
-                              res.redirect('/servicemanage');
-                            });
-                          });
-                        }
-                        //console.log(arr);
-                        console.log("Email was send ...");
-                      } else {
-                        console.log("Error query database ...");
-                        //connection.release();
-                      }
-                    });
-              });
-            }
-          }
-        };
-//cancel service approved
-var delete_approve = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
-    var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {
       var id = req.params.id;
       req.getConnection(function(err, connection) {
-        var Nametemp, Lastnametemp, Emailtemp, SAID, startTime, endTime = '';
-        var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE ResourceAllocated.said = ?', [id], function(err, rows) {
-          Nametemp = rows[0].NameE;
-          Lastnametemp = rows[0].LastNameE;
-          Userid = rows[0].username;
-          Emailtemp = rows[0].email;
-          SAID = rows[0].said;
-          startTime = rows[0].startTime;
-          endTime = rows[0].endTime;
-          console.log("recived Data");
-        });
-        var mailchecker = 0;
-                //send email function
-                var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = 8', function(err, template) { //Query data from database
-                  mailchecker = 1;
-                  if (!err) {
-                    var temp = template[0].Text.split("*").map(function(val) {
-                      return (val);
-                    });
-                        // send email notification
-                        transporter.sendMail({
-                          form: 'Uninet Express Lane Services Team',
-                          to: Emailtemp,
-                          subject: 'Uninet Express Lane',
-                          html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + Nametemp + ' ' + Lastnametemp + ', <br><br>' + temp[0] + SAID + temp[1] + startTime + temp[2] + endTime + temp[3] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                        });
-                        //log data
-                        var logdata = {
-                            //logDate   : now(),
-                            Sender: Nametemp,
-                            Reciver: Userid + "(" + Emailtemp + ")",
-                            emailData: temp[0] + SAID + temp[1] + startTime + temp[2] + endTime + temp[3]
-                          };
-                        //save logs to database
-                        var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                          if (err) {
-                            console.log("Error when query logs : %s", err);
-                          } else {
-                            console.log("Log saved");
-                          }
-                        });
-                        if (mailchecker == 1) {
-                          var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,6 FROM ServiceActivities WHERE said = ?", [id], function(err) {
-                            connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ServiceActivities.said = ResourceAllocated.said SET actType = 6 , actbyuser=1 WHERE ServiceActivities.said = ?", [id], function(err, rows) {
-                              if (err) console.log("Error deleting : %s ", err);
-                              res.redirect('/servicemanage');
-                            });
-                          });
-                        }
-                        //console.log(arr);
-                        console.log("Email was send ...");
-                      } else {
-                        console.log("Error query database ...");
-                        //connection.release();
-                      }
-                    });
-                /*
-                var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,6 FROM ServiceActivities WHERE said = ?",[id],function(err){
-                    connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ServiceActivities.said = ResourceAllocated.said SET actType = 6 , actbyuser=1 WHERE ServiceActivities.said = ?",[id], function(err, rows){
-                        if(err)
-                            console.log("Error deleting : %s ",err );   
-                        res.redirect('/servicemanage');
-                    });
+        var IDUser = '';
+        var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE ResourceAllocated.said = ?', [id], function(err, result) {
+          if (err) console.log("Error selecting ResourceAllocated: %s ", err);
+          else {
+            IDUser = result[0].id;
+            var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ServiceActivities.said = ResourceAllocated.said SET actType = 2, actbyuser = 1 WHERE ServiceActivities.said = ?", [id], function(err, rows) {
+              if (err) console.log("Error updating ServiceActivities: %s ", err);
+              else {
+                var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,2 FROM ServiceActivities WHERE said = ?", [id], function(err) {
+                  if (err) console.log("Error inserting ServiceLogs: %s ", err);
+                  else {
+                    email_sender(7, IDUser);
+                    res.redirect('/servicemanage');
+                  }
                 });
-                */
-              });
-}
-}
+              }
+            });
+          }
+        });
+        connection.release();
+      });
+    }
+  }
 };
+
+//delete service approved
+var delete_approve = function(req, res) {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
+    var user = req.user;
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {
+      var id = req.params.id;
+      req.getConnection(function(err, connection) {
+        var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE ResourceAllocated.said = ?', [id], function(err, result) {
+          if (err) console.log("Error selecting ResourceAllocated: %s ", err);
+          else {
+            var query = connection.query("UPDATE ServiceActivities INNER JOIN ResourceAllocated ON ServiceActivities.said = ResourceAllocated.said SET actType = 6 , actbyuser=1 WHERE ServiceActivities.said = ?", [id], function(err, rows) {
+              if (err) console.log("Error updating ServiceActivities: %s ", err);
+              else {
+                var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,6 FROM ServiceActivities WHERE said = ?", [id], function(err) {
+                  if (err) console.log("Error inserting ServiceLogs: %s ", err);
+                  else {
+                    var IDUser = result[0].id;
+                    var infomation = {
+                      NameUser: result[0].NameE,
+                      LastnameUser: result[0].LastNameE,
+                      SAID: result[0].said,
+                      startTime: result[0].startTime,
+                      endTime: result[0].endTime
+                    };              
+                    email_sender(8, IDUser, infomation);
+                    res.redirect('/servicemanage');                  
+                  }
+                });
+              }
+            });            
+          }
+        });
+        connection.release();
+      });
+    }
+  }
+};
+
 //cancel active service
 var delete_active = function(req, res) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
-    if (user !== undefined) {
-      user = user.toJSON();
-    }
-    if (user.role !== 1) {
-      res.redirect('/');
-    } else {
-            //exports.list = function(req, res){
-            // Email ID 9
-            var id = req.params.id;
-            req.getConnection(function(err, connection) {
-              var Nametemp, Lastnametemp, Emailtemp, SAID, startTime, endTime = '';
-              var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user JOIN ActivePackage ON ServiceActivities.said = ActivePackage.said WHERE ActivePackage.apid = ?', [id], function(err, rows) {
-                Nametemp = rows[0].NameE;
-                Lastnametemp = rows[0].LastNameE;
-                Userid = rows[0].username;
-                Emailtemp = rows[0].email;
-                SAID = rows[0].said;
-                startTime = rows[0].startTime;
-                endTime = rows[0].endTime;
-                console.log("recived Data");
-              });
-              req.getConnection(function(err, connection) {
-                var mailchecker = 0;
-                    //send email function
-                    var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = 8', function(err, template) { //Query data from database
-                      mailchecker = 1;
-                      if (!err) {
-                        var temp = template[0].Text.split("*").map(function(val) {
-                          return (val);
-                        });
-                            // send email notification
-                            transporter.sendMail({
-                              form: 'Uninet Express Lane Services Team',
-                              to: Emailtemp,
-                              subject: 'Uninet Express Lane',
-                              html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + Nametemp + ' ' + Lastnametemp + ', <br><br>' + temp[0] + SAID + temp[1] + startTime + temp[2] + endTime + temp[3] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-                            });
-                            //log data
-                            var logdata = {
-                                //logDate   : now(),
-                                Sender: Nametemp,
-                                Reciver: Userid + "(" + Emailtemp + ")",
-                                emailData: temp[0] + SAID + temp[1] + startTime + temp[2] + endTime + temp[3]
-                              };
-                            //save logs to database
-                            var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                              if (err) {
-                                console.log("Error when query logs : %s", err);
-                              } else {
-                                console.log("Log saved");
-                              }
-                            });
-                            if (mailchecker == 1) {
-                              connection.query("UPDATE ServiceActivities INNER JOIN ActivePackage ON ServiceActivities.said = ActivePackage.said set actType = 9,actbyuser = 1 WHERE ActivePackage.apid = ? ", [id], function(err, rows) {
-                                if (err) console.log("Error deleting : %s ", err);
-                                connection.query("DELETE FROM ActivePackage  WHERE apid = ? ", [id], function(err, rows) {
-                                  if (err) console.log("Error deleting : %s ", err);
-                                  res.redirect('/servicemanage');
-                                });
-                              });
-                            }
-                            //console.log(arr);
-                            console.log("Email was send ...");
-                          } else {
-                            console.log("Error query database ...");
-                            //connection.release();
-                          }
-                        });
-                    /*
-                    var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ActivePackage.said,9 FROM ActivePackage WHERE ActivePackage.apid = ?",[id],function(err){
-                        connection.query("UPDATE ServiceActivities INNER JOIN ActivePackage ON ServiceActivities.said = ActivePackage.said set actType = 9,actbyuser = 1 WHERE ActivePackage.apid = ? ",[id], function(err, rows){
-                            if(err)
-                                console.log("Error deleting : %s ",err );
-                            console.log(id);
-                            connection.query("DELETE FROM ActivePackage  WHERE apid = ? ",[id], function(err, rows){
-                                if(err)
-                                    console.log("Error deleting : %s ",err );
-                                res.redirect('/servicemanage');
-                            });
-                        });
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) res.redirect('/');
+    else {
+      var id = req.params.id;
+      req.getConnection(function(err, connection) {
+        var query = connection.query('SELECT * FROM ActivePackage INNER JOIN ResourceAllocated ON ActivePackage.said=ResourceAllocated.said INNER JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said INNER JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid INNER JOIN User ON User.id = ServiceRequests.user WHERE ActivePackage.apid = ?', [id], function(err, result) {
+          if (err) console.log("Error selecting ResourceAllocated: %s ", err);
+          else {
+            var query = connection.query("UPDATE ServiceActivities INNER JOIN ActivePackage ON ServiceActivities.said = ActivePackage.said set actType = 9,actbyuser = 1 WHERE ActivePackage.apid = ? ", [id], function(err, rows) {
+              if (err) console.log("Error updating ServiceActivities: %s ", err);
+              else {
+                var query = connection.query("DELETE FROM ActivePackage  WHERE apid = ? ", [id], function(err, rows) {
+                  if (err) console.log("Error deleting ActivePackage: %s ", err);
+                  else {
+                    var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,9 FROM ServiceActivities WHERE said = ?", [id], function(err) {
+                      if (err) console.log("Error inserting ServiceLogs: %s ", err);
+                      else {
+                        var IDUser = result[0].id;
+                        var infomation = {
+                          NameUser: result[0].NameE,
+                          LastnameUser: result[0].LastNameE,
+                          SAID: result[0].said,
+                          startTime: result[0].startTime,
+                          endTime: result[0].endTime
+                        };              
+                        email_sender(8, IDUser, infomation);
+                        res.redirect('/servicemanage');                  
+                      }
                     });
-                    */
-                  });
-});
-}
-}
+                  }
+                });
+              }
+            });            
+          }
+        });
+        connection.release();
+      });
+    }
+  }
 };
+
 // sign in
 // POST
 var signInPost = function(req, res, next) {
@@ -1700,21 +1394,33 @@ var delete_rest_service = function(req, res, next) {
 // <<--- END REST API Dev --->>
 
 // ADDITION EMAIL SENDER
-function email_sender(email_id, user_id) { //RETURN callback-> 0 (NOT OK) or 1 (OK)
+function email_sender(email_id, user_id, infomation) { //RETURN callback-> 0 (NOT OK) or 1 (OK)
+  var email_data;
+  var html_text;
   var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = ?', email_id, function(err, template) {
     if (err) console.log("Error selecting EmailTemplates: %s", err);    
     else {
       var userdata = connection.query('SELECT * FROM User WHERE id = ?', user_id, function(err, userdata) {
         if (err) console.log("Error selecting User: %s", err);
         else {
-          var html_text;
-          var email_data;
           if (email_id == 2) {
             var email_text = template[0].Text.split("*").map(function(val) {
               return (val);
             });
             email_data = email_text[0] + userdata[0].NameE + email_text[1] + userdata[0].username + email_text[2]; 
             html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + email_text[0] + userdata[0].NameE + email_text[1] + userdata[0].username + email_text[2] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
+          } else if (email_id == 6) {
+            var email_text = template[0].Text.split("*").map(function(val) {
+              return (val);
+            });            
+            email_data = email_text[0] + infomation.SAID + email_text[1] + infomation.IP1 + email_text[2] + infomation.IP2 + email_text[3] + infomation.startTime + email_text[4] + infomation.endTime + email_text[5];
+            html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + infomation.NameUser + ' ' + infomation.LastnameUser + ', <br><br>' + email_text[0] + infomation.SAID + email_text[1] + infomation.IP1 + email_text[2] + infomation.IP2 + email_text[3] + infomation.startTime + email_text[4] + infomation.endTime + email_text[5] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
+          } else if (email_id == 8) {
+            var email_text = template[0].Text.split("*").map(function(val) {
+              return (val);
+            }); 
+            email_data = email_text[0] + infomation.SAID + email_text[1] + infomation.startTime + email_text[2] + infomation.endTime + email_text[3];
+            html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + infomation.NameUser + ' ' + infomation.LastnameUser + ', <br><br>' + email_text[0] + infomation.SAID + email_text[1] + infomation.startTime + email_text[2] + infomation.endTime + email_text[3] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
           } else {
             email_data = template[0].Text;
             html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + email_data + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
@@ -1785,12 +1491,9 @@ module.exports.cancel_user = cancel_user;
 module.exports.servicemanage = servicemanage;
 // email management
 module.exports.emailmanage = emailmanage;
-module.exports.mailedit = mailedit;
 module.exports.mailsave = mailsave;
-//module.exports.emailLogs = emailLogs;
 //servicemanage
 module.exports.accept_service = accept_service;
-module.exports.edit_service = edit_service;
 module.exports.saveedit_service = saveedit_service;
 module.exports.delete_service = delete_service;
 module.exports.delete_approve = delete_approve;

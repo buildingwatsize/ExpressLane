@@ -121,8 +121,7 @@ app.get('/user/delete/:id', route.delete_user);
 app.get('/user/cancel/:id', route.cancel_user);
 // mail management
 app.get('/emailmanage', route.emailmanage);
-app.get('/emailmanage/mailedit/:id', route.mailedit);
-app.post('/emailmanage/mailedit/:id', route.mailsave);
+app.post('/emailmanage/mailsave/:id', route.mailsave);
 app.get('/PDF/UniNet-Express-Guildline.pdf', route.pdf);
 
 //ADDITIONAL REST API
