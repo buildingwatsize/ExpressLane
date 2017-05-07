@@ -123,6 +123,8 @@ app.get('/user/cancel/:id', route.cancel_user);
 app.get('/emailmanage', route.emailmanage);
 app.post('/emailmanage/mailsave/:id', route.mailsave);
 app.get('/PDF/UniNet-Express-Guildline.pdf', route.pdf);
+app.get('/document', route.doc_page);
+app.get('/contact', route.contact);
 
 //ADDITIONAL REST API
 app.post('/add_rest_service', route.add_rest_service);

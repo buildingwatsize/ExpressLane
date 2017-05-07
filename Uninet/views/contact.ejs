@@ -1,0 +1,172 @@
+<!doctype html>
+<!-- Service Page -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title> UniNet Express Lane Services </title>
+  <!-- core CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/font-awesome.min.css" rel="stylesheet">    
+  <link href="css/animate.min.css" rel="stylesheet">
+  <link href="css/owl.carousel.css" rel="stylesheet">
+  <link href="css/owl.transitions.css" rel="stylesheet">
+  <link href="css/prettyPhoto.css" rel="stylesheet">
+  <link href="css/main.css" rel="stylesheet">
+  <link href="css/responsive.css" rel="stylesheet">
+  <!--[if lt IE 9]>
+  <script src="js/html5shiv.js"></script>
+  <script src="js/respond.min.js"></script>
+  <![endif]-->    
+
+  <!-- Alternative Style -->
+  <!-- <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css"> -->
+
+  <script src="js/jquery.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="http://maps.google.com/maps/api/js?sensor=true"></script>
+  <script src="js/owl.carousel.min.js"></script>
+  <script src="js/mousescroll.js"></script>
+  <script src="js/smoothscroll.js"></script>
+  <script src="js/jquery.prettyPhoto.js"></script>
+  <script src="js/jquery.isotope.min.js"></script>
+  <script src="js/jquery.inview.min.js"></script>
+  <script src="js/wow.min.js"></script>
+  <script src="js/main.js"></script>
+
+  <!-- <link rel="shortcut icon" href="images/ico/favicon.ico"> -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/ico/apple-touch-icon-144-precomposed.png">
+  <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/ico/apple-touch-icon-114-precomposed.png">
+  <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/ico/apple-touch-icon-72-precomposed.png">
+  <link rel="apple-touch-icon-precomposed" href="images/ico/apple-touch-icon-57-precomposed.png">
+</head><!--/head-->
+<body id="home" class="homepage">
+
+  <header id="header">
+    <nav id="main-menu" class="navbar navbar-default navbar-fixed-top" role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><img src="uninet_navbar.gif" style="display:inline-block; height:60px" alt="logo">&nbsp;&nbsp;&nbsp;
+          <font>UniNet Express Lane Services</font></a>
+        </div>
+
+        <% if (!req.isAuthenticated()) { %>
+          <ul class="nav navbar-nav navbar-right">
+            <li class="scroll active"><a href="/">Home</a></li>
+            <li><a href="#" data-toggle="modal" data-target="#login-modal"><span class="glyphicon glyphicon-log-in"></span> &nbsp; Login</a></li>
+          </ul>
+        <% } else { %>
+          <% if(user.role===1){%>
+            <!-- Admin Menu -->
+            <div class="collapse navbar-collapse navbar-right">
+                <ul class="nav navbar-nav">
+                    <li class="scroll active"><a href="/">Home</a></li>
+                    <li class="scroll"><a href="/#about">About</a></li>
+                    <li class="scroll"><a href="/status">Status</a></li>
+                    <li class="scroll"><a href="/user">User Management</a></li>
+                    <li class="scroll"><a href="/emailmanage">Email Management</a></li>
+                    <li class="scroll"><a href="/servicemanage">Service Management</a></li>
+                </ul>
+            </div>
+          <% } else { %>
+            <!-- Member Menu -->
+            <div class="collapse navbar-collapse navbar-right">
+                <ul class="nav navbar-nav">
+                    <li class="scroll"><a href="/">Home</a></li>
+                    <li class="scroll"><a href="/#about">About</a></li>
+                    <li class="scroll"><a href="/#status">Status</a></li>
+                    <li class="scroll"><a href="/service">Services</a></li>
+                    <li class="scroll"><a href="/serviceac">Service Activities</a></li>
+                    <li class="scroll"><a href="/document">Document</a></li>
+                    <li class="scroll active"><a href="/contact">Contact Us</a></li>
+                </ul>
+            </div>
+          <% } %>
+        <% } %>
+
+      </div><!--/.container-->
+    </nav>
+    <!-- Login Modal -->
+    <div class="modal fade" id="login-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+      <div class="modal-dialog">
+        <div class="loginmodal-container">
+          <h2><center><b>Sign in</b></center></h2><br>
+          <form action="/signin" method="post">
+            <input type="text" name="username" id="username" placeholder="Username" required="true" autofocus>
+            <input type="password" name="password" id="password" placeholder="Password" required="true">
+            <font size="10px"><b><input type="submit" name="signin" id="signin" class="btn btn-primary btn-lg" value="Sign In" style="margin-top: 5px"></b></font>
+          </form>
+          <div class="login-help" style="font-size: 16px">
+            <a href="/signup">Register</a> - <a href="/repass">Forgot Password</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Login Modal -->
+  </header>
+
+  <section id="status">
+    <div id="container"> 
+      <div class="section-header">
+        <h2 class="section-title text-center wow fadeInDown">Contact</h2>
+          <p class="text-center wow fadeInDown">ติดต่อสอบถามเพิ่มเติม </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="wow fadeIn">
+    <div id="google-map" style="height:650px" data-latitude="13.7591964" data-longitude="100.5310945"></div>
+      <div class="container-wrapper">
+          <div class="container">
+              <div class="row">
+                  <div class="col-sm-4 col-sm-offset-8">
+                      <div class="contact-form">
+                          <h3>Contact Info</h3>
+
+                          <address style="font-size: 1.25em;">
+                            <strong>สำนักงานบริหารเทคโนโลยีสารสนเทศเพื่อพัฒนาการศึกษา</strong><br>
+                            328 ถ.ศรีอยุธยา แขวง ทุ่งพญาไท เขต ราชเทวี กรุงเทพ 10400<br>
+                            <strong>Phone:</strong> 0-2232-4000<br>
+                            <strong>Fax:</strong> 0-2354-5678 (5012)
+                          </address>
+
+                          <form id="main-contact-form" name="contact-form" method="post" action="#">
+                              <div class="form-group">
+                                  <input type="text" name="name" class="form-control" placeholder="Name" required>
+                              </div>
+                              <div class="form-group">
+                                  <input type="email" name="email" class="form-control" placeholder="Email" required>
+                              </div>
+                              <div class="form-group">
+                                  <input type="text" name="subject" class="form-control" placeholder="Subject" required>
+                              </div>
+                              <div class="form-group">
+                                  <textarea name="message" class="form-control" rows="8" placeholder="Message" required></textarea>
+                              </div>
+                              <button type="submit" class="btn btn-primary">Send Message</button>
+                          </form>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </section>
+
+  <footer id="footer">
+    <div class="container">
+      <div class="row">
+        <%include ./footer %>
+      </div>
+    </div>
+  </footer><!--/#footer-->
+
+  </body>
+</html>

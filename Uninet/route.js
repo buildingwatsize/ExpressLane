@@ -1240,10 +1240,47 @@ var signOut = function(req, res, next) {
     res.redirect('/');
   }
 };
+
+// document main page
+var doc_page = function(req, res) {
+  if (!req.isAuthenticated()) {
+    res.render('document', {
+      title: 'Document',
+      req: req
+    });
+  } else {
+    var user = req.user;
+    if (user !== undefined) user = user.toJSON();
+    res.render('document', {
+      title: 'Document',
+      req: req,
+      user: user
+    });
+  }
+};
+
 // Document PDF
 var pdf = function(req, res) {
   var file = __dirname + '/PDF/UniNet-Express-Guildline.pdf';
   res.download(file); // Set disposition and send it.
+};
+
+// contact page
+var contact = function(req, res) {
+  if (!req.isAuthenticated()) {
+    res.render('contact', {
+      title: 'Contact',
+      req: req
+    });
+  } else {
+    var user = req.user;
+    if (user !== undefined) user = user.toJSON();
+    res.render('contact', {
+      title: 'Contact',
+      req: req,
+      user: user
+    });
+  }
 };
 
 // <<--- BEGIN REST API Dev --->>
@@ -1510,3 +1547,5 @@ module.exports.signUpPost = signUpPost;
 // sign out
 module.exports.signOut = signOut;
 module.exports.pdf = pdf;
+module.exports.doc_page = doc_page;
+module.exports.contact = contact;
