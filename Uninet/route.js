@@ -608,11 +608,11 @@ var delete_user = function(req, res) {
     if (user.role !== 1) res.redirect('/');
     else {
       var id = req.params.id;
+      email_sender(3, id);
       req.getConnection(function(err, connection) {
         var query = connection.query("DELETE FROM User WHERE id = ? ", [id], function(err, rows) {
           if (err) console.log("Error deleting User: %s ", err);
-          else { 
-            email_sender(3, id);
+          else {             
             res.redirect('/user');
           }
         });
@@ -622,7 +622,7 @@ var delete_user = function(req, res) {
   }
 };
 
-//cancel user request
+//GET cancel user request
 var cancel_user = function(req, res) {
   if (!req.isAuthenticated()) res.redirect('/');
   else {
@@ -631,11 +631,11 @@ var cancel_user = function(req, res) {
     if (user.role !== 1) res.redirect('/');
     else {
       var id = req.params.id;
+      email_sender(3, id);
       req.getConnection(function(err, connection) {
         var query = connection.query("DELETE FROM User WHERE id = ? ", [id], function(err, rows) {
           if (err) console.log("Error deleting User: %s ", err);
           else { 
-            email_sender(3, id);
             res.redirect('/user');
           }
         });
@@ -645,7 +645,7 @@ var cancel_user = function(req, res) {
   }
 };
 
-// mail management -- query data  (template & logs)
+//GET mail management -- query data  (template & logs)
 var emailmanage = function(req, res, next) {
   if (!req.isAuthenticated()) res.redirect('/');
   else {
@@ -676,7 +676,7 @@ var emailmanage = function(req, res, next) {
   }
 };
 
-// save email template
+//POST save email template
 var mailsave = function(req, res) {
   if (!req.isAuthenticated()) res.redirect('/');
   else {
@@ -704,7 +704,7 @@ var mailsave = function(req, res) {
   }
 };
 
-//service management
+//GET Service Management
 var servicemanage = function(req, res) {
   if (!req.isAuthenticated()) res.redirect('/');
   else {
@@ -756,7 +756,7 @@ var servicemanage = function(req, res) {
   }
 };
 
-//add service for admin
+//POST add service for admin
 var addService = function(req, res) {
   if (!req.isAuthenticated()) res.redirect('/');
   else {
@@ -829,7 +829,7 @@ var addService = function(req, res) {
   }
 };
 
-//approve service request
+//GET+POST approve service request
 var accept_service = function(req, res) {
   if (!req.isAuthenticated()) res.redirect('/');
   else {
@@ -913,7 +913,7 @@ var accept_service = function(req, res) {
   }
 };
 
-//submit edit service for admin
+//POST submit edit service for admin
 var saveedit_service = function(req, res) {
   if (!req.isAuthenticated()) res.redirect('/');
   else {
@@ -942,7 +942,7 @@ var saveedit_service = function(req, res) {
   }
 };
 
-//delete service requested
+//GET delete service requested
 var delete_service = function(req, res) {
   if (!req.isAuthenticated()) res.redirect('/');
   else {
@@ -977,7 +977,7 @@ var delete_service = function(req, res) {
   }
 };
 
-//delete service approved
+//GET delete service approved
 var delete_approve = function(req, res) {
   if (!req.isAuthenticated()) res.redirect('/');
   else {
@@ -1018,7 +1018,7 @@ var delete_approve = function(req, res) {
   }
 };
 
-//cancel active service
+//GET cancel active service
 var delete_active = function(req, res) {
   if (!req.isAuthenticated()) res.redirect('/');
   else {
@@ -1064,8 +1064,7 @@ var delete_active = function(req, res) {
   }
 };
 
-// sign in
-// POST
+//POST sign in
 var signInPost = function(req, res, next) {
   passport.authenticate('local', {
     successRedirect: '/signin',
@@ -1074,7 +1073,7 @@ var signInPost = function(req, res, next) {
     if (err) {
       return req.getConnection(function(err, connection) {
         var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
-          if (err) { console.log(err); }
+          if (err) console.log("Error selecting [01]: %s", err);
           res.render('index', {
             title: 'Home',
             req: req,
@@ -1082,12 +1081,13 @@ var signInPost = function(req, res, next) {
             errorMessage: err.message
           });
         });
+        connection.release();
       });
     }
     if (!user) {
       return req.getConnection(function(err, connection) {
         var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
-          if (err) { console.log(err); }
+          if (err) console.log("Error selecting [02]: %s", err);
           res.render('index', {
             title: 'Home',
             req: req,
@@ -1095,13 +1095,14 @@ var signInPost = function(req, res, next) {
             errorMessage: info.message
           });
         });
+        connection.release();
       });
     }
     return req.logIn(user, function(err) {
       if (err) {
         return req.getConnection(function(err, connection) {
           var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status_user) {
-            if (err) { console.log(err); }
+            if (err) console.log("Error selecting [03]: %s", err);
             res.render('index', {
               title: 'Home',
               req: req,
@@ -1109,33 +1110,34 @@ var signInPost = function(req, res, next) {
               errorMessage: err.message
             });
           });
+          connection.release();
         });
       } else {
         user.flag = 1;
         req.getConnection(function(err, connection) {
           var query = connection.query('INSERT INTO accessLogs(user,action) VALUES(?,1)', [user.username], function(err, rows) {
-            if (err) console.log("Error Selecting : %s ", err);
+            if (err) console.log("Error inserting: %s", err);
           });
+          connection.release();
         });
         return res.redirect('/');
       }
     });
   })(req, res, next);
 };
-// sign up
-// GET
-var signUp = function(req, res, next) {
-  if (req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+
+//GET sign up
+var signUp = function(req, res) {
+  if (req.isAuthenticated()) res.redirect('/');
+  else {
     res.render('signup', {
       title: 'Sign Up'
     });
   }
 };
-// sign up
-// POST
-var signUpPost = function(req, res, next) {
+
+//POST sign up
+var signUpPost = function(req, res) {
   var user = req.body;
   var usernamePromise = null;
   usernamePromise = new Model.User({
@@ -1145,7 +1147,7 @@ var signUpPost = function(req, res, next) {
     if (model) {
       res.render('signup', {
         title: 'signup',
-        errorMessagesu: 'username already exists'
+        errorMessagesu: 'Username already exists'
       });
     } else {            
       //****************************************************//
@@ -1174,74 +1176,54 @@ var signUpPost = function(req, res, next) {
         membertype: 0,
         flag: 0,
         message: user.message
-      };     
-      var insertion = connection.query("INSERT INTO `User` SET ?", user_form, function(err, rows) {
-        if (err) {
-          console.log("Error when insert query: %s", err);
-          ReportError(res, err);                
-        } else {
-          //send email  function
-          var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = 1', function(err, template) { //Query data from database
-            if (!err) {
-              var temp = template[0].Text
-              // send email notification
-              transporter.sendMail({
-                form: 'Uninet Express Lane Services Team',
-                to: user.email,
-                subject: 'Uninet Express Lane',
-                html: '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + user.NameE + ' ' + user.LastNameE + ', <br><br>' + temp + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>',
-              });
-              //log data
-              var logdata = {
-                  //logDate   : now(),
-                  Sender: "AUTO Sender",
-                  Reciver: user.username + "(" + user.email + ")",
-                  emailData: temp
-                };
-              //save logs to database
-              var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-                if (err) {
-                  console.log("Error when query logs : %s", err);
-                  ReportError(res, err); 
-                } else {
-                  console.log("Log saved");
-                }
-              });
-              //console.log(arr);
-              console.log("Email was send ...");
-            } else {
-              console.log("Error query database ...");
-              //connection.release();
-            }
-          });
-          res.render('registed', {
-            title: 'Registed'
-          });
-        }
+      };  
+      req.getConnection(function(err, connection) {
+        var query = connection.query("INSERT INTO `User` SET ?", user_form, function(err, rows) {
+          if (err) {
+            console.log("Error inserting: %s", err);
+            ReportError(res, err);                
+          } else {          
+            var query = connection.query('SELECT id FROM User WHERE username = ?', user.username, function(err, user_id) {
+              if (err) {
+                console.log("Error selecting: %s", err);
+                ReportError(res, err); 
+              } else {
+                email_sender(1, user_id[0].id);
+                res.render('registed', {
+                  title: 'Registed'
+                });
+              }
+            });          
+          }
+        });
+        connection.release();
       });
     }
   });
 };
-// sign out
-var signOut = function(req, res, next) {
-  if (!req.isAuthenticated()) {
-    res.redirect('/');
-  } else {
+
+//GET sign out
+var signOut = function(req, res) {
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
     var user = req.user;
     req.getConnection(function(err, connection) {
       var query = connection.query("UPDATE User set flag=0 WHERE id = ? ", [user.id], function(err, rows) {
-        if (err) console.log("Error Selecting : %s ", err);
+        if (err) console.log("Error updating: %s ", err);
+        else { 
+          var query = connection.query('INSERT INTO accessLogs(user,action) SELECT User.username,2 FROM User WHERE User.id = ?', [user.id], function(err, rows) {
+            if (err) console.log("Error inserting: %s ", err);
+          }); 
+        }
       });
-      var query = connection.query('INSERT INTO accessLogs(user,action) SELECT User.username,2 FROM User WHERE User.id = ?', [user.id], function(err, rows) {
-        if (err) console.log("Error Selecting : %s ", err);
-      });      
+      connection.release();     
     });
     req.logout();
     res.redirect('/');
   }
 };
 
-// document main page
+//GET document main page
 var doc_page = function(req, res) {
   if (!req.isAuthenticated()) {
     res.render('document', {
@@ -1259,13 +1241,13 @@ var doc_page = function(req, res) {
   }
 };
 
-// Document PDF
+//GET Document PDF
 var pdf = function(req, res) {
   var file = __dirname + '/PDF/UniNet-Express-Guildline.pdf';
   res.download(file); // Set disposition and send it.
 };
 
-// contact page
+//GET contact page
 var contact = function(req, res) {
   if (!req.isAuthenticated()) {
     res.render('contact', {
@@ -1284,7 +1266,7 @@ var contact = function(req, res) {
 };
 
 // <<--- BEGIN REST API Dev --->>
-// add request
+//POST add request
 var add_rest_service = function(req, res, next) {
   var input = JSON.parse(JSON.stringify(req.body));
   var user = JSON.parse(JSON.stringify(req.body.user));
@@ -1348,7 +1330,7 @@ var add_rest_service = function(req, res, next) {
   });
 };
 
-// edit request 
+//POST edit request 
 var edit_rest_service = function(req, res, next) {
   var input = JSON.parse(JSON.stringify(req.body));
   var user = JSON.parse(JSON.stringify(req.body.user));
@@ -1379,7 +1361,7 @@ var edit_rest_service = function(req, res, next) {
   });
 };
 
-// delete request 
+//POST delete request 
 var delete_rest_service = function(req, res, next) {
   var input = JSON.parse(JSON.stringify(req.body));
   var user = JSON.parse(JSON.stringify(req.body.user));
@@ -1434,10 +1416,10 @@ var delete_rest_service = function(req, res, next) {
 function email_sender(email_id, user_id, infomation) { //RETURN callback-> 0 (NOT OK) or 1 (OK)
   var email_data;
   var html_text;
-  var emailtemp = connection.query('SELECT Text FROM EmailTemplates WHERE id = ?', email_id, function(err, template) {
+  var query = connection.query('SELECT Text FROM EmailTemplates WHERE id = ?', email_id, function(err, template) {
     if (err) console.log("Error selecting EmailTemplates: %s", err);    
     else {
-      var userdata = connection.query('SELECT * FROM User WHERE id = ?', user_id, function(err, userdata) {
+      var query = connection.query('SELECT * FROM User WHERE id = ?', user_id, function(err, userdata) {
         if (err) console.log("Error selecting User: %s", err);
         else {
           if (email_id == 2) {
@@ -1487,6 +1469,7 @@ function email_sender(email_id, user_id, infomation) { //RETURN callback-> 0 (NO
   });
 }
 
+// ADDITION REPORT ERROR
 function ReportError(res, err) {
   var errMsg = {
     errorMessage: err
@@ -1502,24 +1485,22 @@ function ReportError(res, err) {
 module.exports.check = check;
 // index
 module.exports.index = index;
+// profile and repassword
 module.exports.member = member;
-//admin
-// profile
 module.exports.profile = profile;
-//repassword
-module.exports.repass = repass
-module.exports.repasspost = repasspost
+module.exports.repass = repass;
+module.exports.repasspost = repasspost;
 //content
 module.exports.status = status;
 module.exports.service = service;
-//memberaction
+//member action
 module.exports.serviceac = serviceac;
 module.exports.addServiceac = addServiceac;
 module.exports.add_rest_service = add_rest_service;
 module.exports.edit_rest_service = edit_rest_service;
 module.exports.delete_rest_service = delete_rest_service;
 module.exports.ccServiceac = ccServiceac;
-//adminaction
+//admin action
 module.exports.user = user;
 module.exports.accept = accept;
 module.exports.saveedit = saveedit;
@@ -1537,15 +1518,13 @@ module.exports.delete_approve = delete_approve;
 module.exports.delete_active = delete_active;
 module.exports.addService = addService;
 // sigin in
-// POST
 module.exports.signInPost = signInPost;
 // sign up
-// GET
 module.exports.signUp = signUp;
-// POST
 module.exports.signUpPost = signUpPost;
 // sign out
 module.exports.signOut = signOut;
+// document and other
 module.exports.pdf = pdf;
 module.exports.doc_page = doc_page;
 module.exports.contact = contact;
