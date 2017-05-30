@@ -117,6 +117,7 @@ var index = function(req, res) {
           });
         }
       });
+      connection.release();
     });
   } else {
     var user = req.user;
