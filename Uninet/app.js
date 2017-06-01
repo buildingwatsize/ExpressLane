@@ -127,6 +127,11 @@ app.get('/document', route.doc_page);
 app.get('/contact', route.contact);
 
 //ADDITIONAL REST API
+app.get('/rest/profile', route.profile_rest);
+app.post('/rest/reset_password', route.reset_password_rest);
+app.get('/rest/status', route.status_rest);
+app.get('/rest/user/services', route.user_services_rest);
+
 app.post('/add_rest_service', route.add_rest_service);
 app.post('/edit_rest_service', route.edit_rest_service);
 app.post('/delete_rest_service', route.delete_rest_service);

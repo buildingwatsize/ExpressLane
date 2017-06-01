@@ -5,17 +5,25 @@
 
 // module list
 var passport = require('passport');
+var url = require('url');
 var bcrypt = require('bcrypt-nodejs');
 var cron = require('node-schedule'); //node-schedule
 var Model = require('./models/model');
 var mysql = require('mysql'); //mysql
 var connection = mysql.createConnection({ //database setting
-    host: 'localhost', //database IP
-    user: 'root',
-    password: 'root',
-    database: 'UniNetExpressLane' //database name
-  });
+  host: 'localhost', //database IP
+  user: 'root',
+  password: 'root',
+  database: 'UniNetExpressLane' //database name
+});
 connection.connect();
+
+var pool = mysql.createPool({
+  host: 'localhost', //database IP
+  user: 'root',
+  password: 'root',
+  database: 'UniNetExpressLane' //database name
+});
 
 var nodemailer = require('nodemailer'); //nodemailler
 var transporter = nodemailer.createTransport({
@@ -1267,8 +1275,325 @@ var contact = function(req, res) {
 };
 
 // <<--- BEGIN REST API Dev --->>
+
+/* GET profile detail
+  in: /rest/profile?id=22&username=admin
+  out: {events, timestamp, result:{id, firstname, lastname, organization, phone, email, membertype, message, Msg}} 
+*/
+var profile_rest = function(req, res) {
+  var url_parts = url.parse(req.url, true);
+  var url_query = url_parts.query;
+  var result_text = "";
+
+  res.set('Content-Type', 'application/json');
+
+  req.getConnection(function(err, connection) {
+    var query = connection.query('SELECT id, username, NameE, LastNameE, org, phone, email, membertype, message FROM User WHERE username = ? and id = ?', [url_query.username, url_query.id], function(err, user_detail) {
+      if (err) {
+        result_text = "Error: "+err;
+        var response_json = {
+          events: "GET Profile Error",
+          timestamp: getTimestamp(),
+          result: {
+            errMsg: "Cannot selecting from database" 
+          }
+        }
+        res.send(response_json);
+      } else {
+        if(user_detail.length != 0){
+          if(user_detail[0].org === 1) var org = "Chulalongkorn University";
+          else if(user_detail[0].org === 2) var org = "Kasetsart University";
+          else if(user_detail[0].org === 3) var org = "Khon Kean University";
+          else if(user_detail[0].org === 4) var org = "Chiang Mai University";
+          else if(user_detail[0].org === 5) var org = "Thaksin University";
+          else if(user_detail[0].org === 6) var org = "King Mongkut's University of Technology Thonburi";
+          else if(user_detail[0].org === 7) var org = "King Mongkut's University of Technology North Bangkok";
+          else if(user_detail[0].org === 8) var org = "Suranaree University of Technology";
+          else if(user_detail[0].org === 9) var org = "Thammasat University";
+          else if(user_detail[0].org === 10) var org = "Nakhon Phanom University";
+          else if(user_detail[0].org === 11) var org = "Princess of Naradhiwas University";
+          else if(user_detail[0].org === 12) var org = "Naresuan University";
+          else if(user_detail[0].org === 13) var org = "Burapha University";
+          else if(user_detail[0].org === 14) var org = "University of Phayao";
+          else if(user_detail[0].org === 15) var org = "Mahasarakham University";
+          else if(user_detail[0].org === 16) var org = "Mahidol University";
+          else if(user_detail[0].org === 17) var org = "Maejo University";
+          else if(user_detail[0].org === 18) var org = "Mae Fah Luang University";
+          else if(user_detail[0].org === 19) var org = "Walailak University";
+          else if(user_detail[0].org === 20) var org = "Srinakharinwirot University";
+          else if(user_detail[0].org === 21) var org = "Silpakorn University";
+          else if(user_detail[0].org === 22) var org = "Prince of Songkla University";
+          else if(user_detail[0].org === 23) var org = "Ubon Ratchathani University";
+          else if(user_detail[0].org === 24) var org = "King Mongkut's Institute of Technology Ladkrabang";
+          else var org = "Invalid";
+
+          if(user_detail[0].membertype === 0) var membertype = "Standard Member";
+          else if(user_detail[0].membertype === 1) var membertype = "Premium Member";
+          else if(user_detail[0].membertype === 2) var membertype = "Associate Member";
+          else var org = "Invalid";        
+
+          result_text = "Complete: GET Profile Detail";
+          var response_json = {
+            events: "GET Profile Complete",
+            timestamp: getTimestamp(),
+            result: {
+              id: user_detail[0].id,
+              firstname: user_detail[0].NameE,
+              lastname: user_detail[0].LastNameE,
+              organization: org,
+              phone: user_detail[0].phone,
+              email: user_detail[0].email,
+              membertype: membertype,
+              message: user_detail[0].message,
+              Msg: "GET Profile Detail Success"
+            }
+          }
+          res.send(response_json);          
+        } else {
+          result_text = "Error: Invalid username or id";
+          var response_json = {
+            events: "GET Profile Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Invalid username or id" 
+            }
+          }
+          res.send(response_json);
+        }              
+      }      
+      // log saved  
+      var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 1, result_text], function(err, rows) {
+        if (err) console.log("Error inserting access_rest_log: %s", err);
+      });      
+    });
+    connection.release();  
+  });
+};
+
+/* POST reset password
+  in: {user:{username,password,email}}
+  out: {events,timestamp,result{Msg}}
+*/
+var reset_password_rest = function(req, res) {
+  var user = JSON.parse(JSON.stringify(req.body.user));
+  var result_text = "";
+  res.set('Content-Type', 'application/json');
+
+  req.getConnection(function(err, connection) {
+    var query = connection.query('SELECT * FROM User WHERE username = ? and email = ?',[user.username, user.email] , function(err, user_detail) {
+      if (err) {
+        result_text = "Error: "+err;
+        var response_json = {
+          events: "POST Reset Password Error",
+          timestamp: getTimestamp(),
+          result: {
+            errMsg: "Cannot selecting from database" 
+          }
+        }
+        res.send(response_json);
+        // log saved  
+        var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 2, result_text], function(err, rows) {
+          if (err) console.log("Error inserting access_rest_log: %s", err);
+        });
+      } else {
+        if(user_detail.length != 0){
+          var hash = bcrypt.hashSync(user.password);
+          var query = connection.query("UPDATE User set password = ? WHERE username = ? and email = ? ", [hash, user.username, user.email], function(err) {
+            if(err){
+              result_text = "Error: "+err;
+              var response_json = {
+                events: "POST Reset Password Error",
+                timestamp: getTimestamp(),
+                result: {
+                  errMsg: "Cannot updating to database" 
+                }
+              }
+              res.send(response_json);           
+            } else {
+              result_text = "Complete: POST Reset Password";
+              var response_json = {
+                events: "POST Reset Password Complete",
+                timestamp: getTimestamp(),
+                result: {
+                  Msg: "Reset Password Success"
+                }
+              }
+              res.send(response_json);
+              // email confirmed
+              email_sender(4, user_detail[0].id);   
+            }
+            // log saved  
+            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 2, result_text], function(err, rows) {
+              if (err) console.log("Error inserting access_rest_log: %s", err);
+            }); 
+          });
+        } else {
+          result_text = "Error: Invalid username or email";
+          var response_json = {
+            events: "POST Reset Password Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Invalid username or email" 
+            }
+          }
+          res.send(response_json);
+          // log saved 
+          var query = connection.query('SELECT id FROM User WHERE username = ?',[user.username] , function(err, user_detail) {
+            if(err) console.log("Error selecting user data: %s", err);
+            else {
+              var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 2, result_text], function(err, rows) {
+                if (err) console.log("Error inserting access_rest_log: %s", err);
+              });
+            }
+          });
+        }                  
+      }            
+    });
+    connection.release();  
+  });
+};
+
+/* GET status detail
+  in: /rest/status
+  out: {events, timestamp, result:{Msg, status:[id, zone, statuss, start_time, duration_time]}} 
+*/
+var status_rest = function(req, res) {
+  var url_parts = url.parse(req.url, true);
+  var url_query = url_parts.query;
+  var result_text = "";
+
+  res.set('Content-Type', 'application/json');
+
+  req.getConnection(function(err, connection) {
+    var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time FROM Online_Status Order By id', function(err, result_status) {
+      if (err) {
+        result_text = "Error: "+err;
+        var response_json = {
+          events: "GET Status Error",
+          timestamp: getTimestamp(),
+          result: {
+            errMsg: "Cannot selecting from database" 
+          }
+        }
+        res.send(response_json);
+      } else {
+        if(result_status.length != 0){
+          result_text = "Complete: GET Status Detail";
+          var response_json = {
+            events: "GET Status Complete",
+            timestamp: getTimestamp(),
+            result: {              
+              Msg: "GET Status Detail Success",
+              status: result_status
+            }
+          }
+          res.send(response_json); 
+        } else {
+          result_text = "Error: Not have any node in database";
+          var response_json = {
+            events: "GET Status Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Not have any node in database" 
+            }
+          }
+          res.send(response_json);
+        }
+      }
+      // log saved  
+      var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), 0, 3, result_text], function(err, rows) {
+        if (err) console.log("Error inserting access_rest_log: %s", err);
+      });
+    });
+    connection.release();  
+  });
+};
+
+/* GET user services detail
+  in: /rest/user/services?id=79&username=test
+  out: {events, timestamp, result:{Msg, service_list:[said, resourceString1, resourceString2, IP1, IP2, startTime, endTime, actType, nameE]}} 
+*/
+var user_services_rest = function(req, res) {
+  var url_parts = url.parse(req.url, true);
+  var url_query = url_parts.query;
+  var result_text = "";
+
+  res.set('Content-Type', 'application/json');
+
+  req.getConnection(function(err, connection) {
+    var query = connection.query('SELECT id, username, NameE, LastNameE, org, phone, email, membertype, message FROM User WHERE username = ? and id = ?', [url_query.username, url_query.id], function(err, user_detail) {
+      if (err) {
+        result_text = "Error: "+err;
+        var response_json = {
+          events: "GET User Detail Error",
+          timestamp: getTimestamp(),
+          result: {
+            errMsg: "Cannot selecting from database" 
+          }
+        }
+        res.send(response_json);
+        // log saved  
+        var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 4, result_text], function(err, rows) {
+          if (err) console.log("Error inserting access_rest_log: %s", err);
+        });
+      } else {
+        if(user_detail.length != 0){
+          var query = connection.query('SELECT ResourceAllocated.said,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime , ServiceActivityType.actType , ServiceActivityType.nameE FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN ServiceActivityType ON ServiceActivities.actType=ServiceActivityType.actType WHERE user = ? and actbyuser != 1 and (ServiceActivities.actType = 0 or ServiceActivities.actType = 4 or ServiceActivities.actType = 7)', [url_query.id], function(err, service_list) {
+            if (err) {
+              result_text = "Error: "+err;
+              var response_json = {
+                events: "GET User Services Error",
+                timestamp: getTimestamp(),
+                result: {
+                  errMsg: "Cannot selecting from database" 
+                }
+              }
+              res.send(response_json);
+            } else {
+              result_text = "Complete: GET User Services";
+              var response_json = {
+                events: "GET User Services Complete",
+                timestamp: getTimestamp(),
+                result: {
+                  Msg: "GET User Services Success",
+                  service_list: service_list
+                }
+              }
+              res.send(response_json);
+            }
+            // log saved  
+            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 4, result_text], function(err, rows) {
+              if (err) console.log("Error inserting access_rest_log: %s", err);
+            });
+          });
+        } else {
+          result_text = "Error: Invalid username or id";
+          var response_json = {
+            events: "GET User Detail Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Invalid username or id" 
+            }
+          }
+          res.send(response_json);
+          // log saved  
+          var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 4, result_text], function(err, rows) {
+            if (err) console.log("Error inserting access_rest_log: %s", err);
+          });
+        }
+      }
+    });
+    connection.release();
+  });
+};
+
+
+
+
+
+
 //POST add request
-var add_rest_service = function(req, res, next) {
+var add_rest_service = function(req, res) {
   var input = JSON.parse(JSON.stringify(req.body));
   var user = JSON.parse(JSON.stringify(req.body.user));
   
@@ -1328,11 +1653,12 @@ var add_rest_service = function(req, res, next) {
         console.log("Error User Not Found : %s ", err);
       }
     });
+    connection.release();  
   });
 };
 
 //POST edit request 
-var edit_rest_service = function(req, res, next) {
+var edit_rest_service = function(req, res) {
   var input = JSON.parse(JSON.stringify(req.body));
   var user = JSON.parse(JSON.stringify(req.body.user));
   var said_data = input.said;
@@ -1359,11 +1685,12 @@ var edit_rest_service = function(req, res, next) {
         }
       }
     });
+    connection.release();
   });
 };
 
 //POST delete request 
-var delete_rest_service = function(req, res, next) {
+var delete_rest_service = function(req, res) {
   var input = JSON.parse(JSON.stringify(req.body));
   var user = JSON.parse(JSON.stringify(req.body.user));
   var said_data = input.said;
@@ -1409,6 +1736,7 @@ var delete_rest_service = function(req, res, next) {
     } else {
       console("Connection Error: %s", err);
     }
+    connection.release();  
   });
 };
 // <<--- END REST API Dev --->>
@@ -1417,56 +1745,59 @@ var delete_rest_service = function(req, res, next) {
 function email_sender(email_id, user_id, infomation) { //RETURN callback-> 0 (NOT OK) or 1 (OK)
   var email_data;
   var html_text;
-  var query = connection.query('SELECT Text FROM EmailTemplates WHERE id = ?', email_id, function(err, template) {
-    if (err) console.log("Error selecting EmailTemplates: %s", err);    
-    else {
-      var query = connection.query('SELECT * FROM User WHERE id = ?', user_id, function(err, userdata) {
-        if (err) console.log("Error selecting User: %s", err);
-        else {
-          if (email_id == 2) {
-            var email_text = template[0].Text.split("*").map(function(val) {
-              return (val);
-            });
-            email_data = email_text[0] + userdata[0].NameE + email_text[1] + userdata[0].username + email_text[2]; 
-            html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + email_text[0] + userdata[0].NameE + email_text[1] + userdata[0].username + email_text[2] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
-          } else if (email_id == 6) {
-            var email_text = template[0].Text.split("*").map(function(val) {
-              return (val);
-            });            
-            email_data = email_text[0] + infomation.SAID + email_text[1] + infomation.IP1 + email_text[2] + infomation.IP2 + email_text[3] + infomation.startTime + email_text[4] + infomation.endTime + email_text[5];
-            html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + infomation.NameUser + ' ' + infomation.LastnameUser + ', <br><br>' + email_text[0] + infomation.SAID + email_text[1] + infomation.IP1 + email_text[2] + infomation.IP2 + email_text[3] + infomation.startTime + email_text[4] + infomation.endTime + email_text[5] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
-          } else if (email_id == 8) {
-            var email_text = template[0].Text.split("*").map(function(val) {
-              return (val);
-            }); 
-            email_data = email_text[0] + infomation.SAID + email_text[1] + infomation.startTime + email_text[2] + infomation.endTime + email_text[3];
-            html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + infomation.NameUser + ' ' + infomation.LastnameUser + ', <br><br>' + email_text[0] + infomation.SAID + email_text[1] + infomation.startTime + email_text[2] + infomation.endTime + email_text[3] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
-          } else {
-            email_data = template[0].Text;
-            html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + email_data + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
-          }
-          // send email notification
-          transporter.sendMail({
-            form: 'Uninet Express Lane Services Team',
-            to: userdata[0].email,
-            subject: 'Uninet Express Lane Service',
-            html: html_text,
-          });
-          // save email log
-          var logdata = {
-            Sender: "Auto Sender",
-            Reciver: userdata[0].username + "(" + userdata[0].email + ")",
-            emailData: email_data
-          };
-          var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
-            if (!err) console.log("Log saved");
-            else {
-              console.log("Error inserting EmailLogs: %s", err);
+  pool.getConnection(function(err, connection) {
+    var query = connection.query('SELECT Text FROM EmailTemplates WHERE id = ?', email_id, function(err, template) {
+      if (err) console.log("Error selecting EmailTemplates: %s", err);    
+      else {
+        var query = connection.query('SELECT * FROM User WHERE id = ?', user_id, function(err, userdata) {
+          if (err) console.log("Error selecting User: %s", err);
+          else {
+            if (email_id == 2) {
+              var email_text = template[0].Text.split("*").map(function(val) {
+                return (val);
+              });
+              email_data = email_text[0] + userdata[0].NameE + email_text[1] + userdata[0].username + email_text[2]; 
+              html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + email_text[0] + userdata[0].NameE + email_text[1] + userdata[0].username + email_text[2] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
+            } else if (email_id == 6) {
+              var email_text = template[0].Text.split("*").map(function(val) {
+                return (val);
+              });            
+              email_data = email_text[0] + infomation.SAID + email_text[1] + infomation.IP1 + email_text[2] + infomation.IP2 + email_text[3] + infomation.startTime + email_text[4] + infomation.endTime + email_text[5];
+              html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + infomation.NameUser + ' ' + infomation.LastnameUser + ', <br><br>' + email_text[0] + infomation.SAID + email_text[1] + infomation.IP1 + email_text[2] + infomation.IP2 + email_text[3] + infomation.startTime + email_text[4] + infomation.endTime + email_text[5] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
+            } else if (email_id == 8) {
+              var email_text = template[0].Text.split("*").map(function(val) {
+                return (val);
+              }); 
+              email_data = email_text[0] + infomation.SAID + email_text[1] + infomation.startTime + email_text[2] + infomation.endTime + email_text[3];
+              html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + infomation.NameUser + ' ' + infomation.LastnameUser + ', <br><br>' + email_text[0] + infomation.SAID + email_text[1] + infomation.startTime + email_text[2] + infomation.endTime + email_text[3] + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
+            } else {
+              email_data = template[0].Text;
+              html_text = '<div style="width:600px;font-size:14px;color:#333333;font-family:Trebuchet MS,Verdana,Arial,Helvetica,sans-serif;"><br>Dear ' + userdata[0].NameE + ' ' + userdata[0].LastNameE + ', <br><br>' + email_data + '<br><br><br><hr color="#666666" align="left" width="600" size="1" noshade=""></div>';
             }
-          });
-        }
-      });
-    }
+            // send email notification
+            transporter.sendMail({
+              form: 'Uninet Express Lane Services Team',
+              to: userdata[0].email,
+              subject: 'Uninet Express Lane Service',
+              html: html_text,
+            });
+            // save email log
+            var logdata = {
+              Sender: "Auto Sender",
+              Reciver: userdata[0].username + "(" + userdata[0].email + ")",
+              emailData: email_data
+            };
+            var savelogs = connection.query("INSERT INTO  `EmailLogs` SET ?", logdata, function(err, rows) {
+              if (!err) console.log("Log saved");
+              else {
+                console.log("Error inserting EmailLogs: %s", err);
+              }
+            });
+          }
+        });
+      }
+    });
+    connection.release();
   });
 }
 
@@ -1478,6 +1809,24 @@ function ReportError(res, err) {
   console.log("Report Error ----->> "+errMsg.errorMessage);
   res.set('Content-Type', 'application/json');
   res.send(errMsg);
+}
+
+// ADDITION 2-digit for Timestamp
+function addZero(i) {
+    if (i < 10) i = "0" + i;
+    return i;
+}
+
+// ADDITION get Timestamp
+function getTimestamp(){
+  var d = new Date();
+  var Y = d.getFullYear();
+  var M = addZero(d.getMonth());
+  var D = addZero(d.getDate());
+  var h = addZero(d.getHours());
+  var m = addZero(d.getMinutes());
+  var s = addZero(d.getSeconds());
+  return Y+"-"+M+"-"+D+" "+h+":"+m+":"+s;
 }
 
 // export functions
@@ -1529,3 +1878,11 @@ module.exports.signOut = signOut;
 module.exports.pdf = pdf;
 module.exports.doc_page = doc_page;
 module.exports.contact = contact;
+/***************************************/
+// REST APIs
+/***************************************/
+// Profile
+module.exports.profile_rest = profile_rest;
+module.exports.reset_password_rest = reset_password_rest;
+module.exports.status_rest = status_rest;
+module.exports.user_services_rest = user_services_rest;
