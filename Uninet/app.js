@@ -80,6 +80,17 @@ app.use(connection(mysql, {
     password: 'root',
     database: 'UniNetExpressLane'
 }, 'pool'));
+
+app.use(function(req,res,next){
+    var _send = res.send;
+    var sent = false;
+    res.send = function(data){
+        if(sent) return;
+        _send.bind(res)(data);
+        sent = true;
+    };
+    next();
+});
 //route module for page
 /********************************/
 //index
@@ -130,7 +141,18 @@ app.get('/contact', route.contact);
 app.get('/rest/profile', route.profile_rest);
 app.post('/rest/reset_password', route.reset_password_rest);
 app.get('/rest/status', route.status_rest);
-app.get('/rest/user/services', route.user_services_rest);
+app.get('/rest/services/all', route.services_all_rest);
+app.get('/rest/services/state', route.services_state_rest);
+app.get('/rest/services/history', route.services_history_rest);
+
+app.get('/rest/services/requested', route.services_requested_rest);
+app.get('/rest/services/approved', route.services_approved_rest);
+app.get('/rest/services/activated', route.services_activated_rest);
+
+app.get('/rest/user/requested', route.user_requested_rest);
+app.post('/rest/user/accept', route.user_accept_rest);
+app.post('/rest/user/edit', route.user_edit_rest);
+app.post('/rest/user/delete', route.user_delete_rest);
 
 app.post('/add_rest_service', route.add_rest_service);
 app.post('/edit_rest_service', route.edit_rest_service);
