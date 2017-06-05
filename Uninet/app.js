@@ -153,6 +153,10 @@ app.get('/rest/user/requested', route.user_requested_rest);
 app.post('/rest/user/accept', route.user_accept_rest);
 app.post('/rest/user/edit', route.user_edit_rest);
 app.post('/rest/user/delete', route.user_delete_rest);
+app.get('/rest/user/all', route.user_all_rest);
+app.get('/rest/user/logs', route.user_accesslogs_rest);
+app.post('/rest/user/signup', route.user_signup_rest);
+app.get('/rest/logs', route.user_accesslogs_rest);
 
 app.post('/add_rest_service', route.add_rest_service);
 app.post('/edit_rest_service', route.edit_rest_service);

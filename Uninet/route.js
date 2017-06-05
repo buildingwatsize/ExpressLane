@@ -1276,7 +1276,7 @@ var contact = function(req, res) {
 
 // <<--- BEGIN REST API Dev --->>
 
-/* GET profile detail
+/* ID: 1 GET profile detail
   in: /rest/profile?id=22&username=admin
   out: {events, timestamp, result:{id, firstname, lastname, organization, phone, email, membertype, message, Msg}} 
 */
@@ -1371,7 +1371,7 @@ var profile_rest = function(req, res) {
   });
 };
 
-/* POST reset password
+/* ID: 2 POST reset password
   in: {user:{username,password,email}}
   out: {events,timestamp,result{Msg}}
 */
@@ -1454,7 +1454,7 @@ var reset_password_rest = function(req, res) {
   });
 };
 
-/* GET status detail
+/* ID: 3 GET status detail
   in: /rest/status
   out: {events, timestamp, result:{Msg, status:[id, zone, statuss, start_time, duration_time]}} 
 */
@@ -1510,7 +1510,7 @@ var status_rest = function(req, res) {
   });
 };
 
-/* GET services detail
+/* ID: 4 GET services detail
   in: /rest/services/all?id=79&username=test
   out: {events, timestamp, result:{Msg, service_list:[said, resourceString1, resourceString2, IP1, IP2, startTime, endTime, actType, nameE]}} 
 */
@@ -1589,7 +1589,7 @@ var services_all_rest = function(req, res) {
   });
 };
 
-/* GET services state
+/* ID: 5 GET services state
   in: /rest/services/state?id=79&username=test
   out: {events, timestamp, result:{Msg, service_state:[said, resourceString1, resourceString2, IP1, IP2, startTime, endTime, actType, nameE]}} 
 */
@@ -1668,7 +1668,7 @@ var services_state_rest = function(req, res) {
   });
 };
 
-/* GET services history
+/* ID: 6 GET services history
   in: /rest/services/history?id=79&username=test
   out: {events, timestamp, result:{Msg, service_history:[said, resourceString1, resourceString2, IP1, IP2, startTime, endTime, timestamp, actType, nameE]}} 
 */
@@ -1747,7 +1747,7 @@ var services_history_rest = function(req, res) {
   });
 };
 
-/* GET [admin] services requested
+/* ID: 7 GET [admin] services requested
   in: /rest/services/requested?id=22&username=admin
   out: {events, timestamp, result:{Msg, service_requested:[said, username, resourceString1, resourceString2, IP1, IP2, startTime, endTime]}} 
 */
@@ -1857,7 +1857,7 @@ var services_requested_rest = function(req, res) {
   }
 };
 
-/* GET [admin] services approved
+/* ID: 8 GET [admin] services approved
   in: /rest/services/approved?id=22&username=admin
   out: {events, timestamp, result:{Msg, service_approved:[said, username, resourceString1, resourceString2, IP1, IP2, startTime, endTime]}} 
 */
@@ -1967,7 +1967,7 @@ var services_approved_rest = function(req, res) {
   }
 };
 
-/* GET [admin] services activated
+/* ID: 9 GET [admin] services activated
   in: /rest/services/activated?id=22&username=admin
   out: {events, timestamp, result:{Msg, service_activated:[apid, username, resourceString1, resourceString2, IP1, IP2, startTime, endTime]}} 
 */
@@ -2077,7 +2077,7 @@ var services_activated_rest = function(req, res) {
   }
 };
 
-/* GET [admin] user requested
+/* ID: 10 GET [admin] user requested
   in: /rest/user/requested?id=22&username=admin
   out: {events, timestamp, result:{Msg, req_user:[id, username, NameE, LastNameE, email, org, phone, message]}} 
 */
@@ -2123,7 +2123,7 @@ var user_requested_rest = function(req, res) {
         } else {
           if(user_detail.length != 0){ 
             if (user_detail[0].username == url_query.username) {
-              var query = connection.query('SELECT User.id,User.username , User.NameE , User.LastNameE ,  User.email , org.nameE AS org , User.phone , User.message FROM User JOIN org ON User.org = org.org WHERE role IS NULL', function(err, req_user) {
+              var query = connection.query('SELECT User.id, User.username, User.NameE, User.LastNameE,  User.email, org.nameE AS org, User.phone, User.message FROM User JOIN org ON User.org = org.org WHERE role IS NULL', function(err, req_user) {
                 if (err) {
                   result_text = "Error: "+err;
                   var response_json = {
@@ -2187,7 +2187,7 @@ var user_requested_rest = function(req, res) {
   }
 };
 
-/* POST [admin] user [for requested] accept
+/* ID: 11 POST [admin] user [for requested] accept
   in: /rest/user/accept {user:{id,username}, target:{id,username}}
   out: {events, timestamp, result:{Msg}} 
 */
@@ -2354,7 +2354,7 @@ var user_accept_rest = function(req, res) {
   }
 };
 
-/* POST [admin] user [for all user] edit
+/* ID: 12 POST [admin] user [for all user] edit
   in: /rest/user/edit {user:{id,username}, target:{id,username,NameE,LastNameE,org,phone,email,membertype,role}}
   out: {events, timestamp, result:{Msg}} 
 */
@@ -2539,17 +2539,508 @@ var user_edit_rest = function(req, res) {
   }
 };
 
+/* ID: 13 POST [admin] user [for all user] delete
+  in: /rest/user/delete {user:{id,username}, target:{id,username}}
+  out: {events, timestamp, result:{Msg}} 
+*/
 var user_delete_rest = function(req, res) {
-  console.log("deleted");
+  var body = JSON.parse(JSON.stringify(req.body));
+  var user = body.user;
+  var target = body.target;
+  var result_text = "";
+  var response_json = "";
+
+  res.set('Content-Type', 'application/json');
+
+  if(target == undefined || body == undefined || user == undefined || user.id == undefined || user.username == undefined || target.id == undefined || target.username == undefined) {
+    result_text = "Error: Invalid user or target";
+      var response_json = {
+        events: "POST User Delete Error",
+        timestamp: getTimestamp(),
+        result: {
+          errMsg: "Invalid user or target" 
+        }
+    }
+    res.send(response_json);
+    // log saved  
+    var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), 0, 13, result_text], function(err) {
+      if (err) console.log("Error inserting access_rest_log: %s", err);
+    });    
+  } else {
+    req.getConnection(function(err, connection) {
+      var query = connection.query('SELECT id, username, NameE, LastNameE, org, phone, email, membertype, message FROM User WHERE id = ?', [user.id], function(err, user_detail) {
+        if (err) {
+          result_text = "Error: "+err;
+          var response_json = {
+            events: "POST User Delete Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Cannot selecting from database" 
+            }
+          }
+          res.send(response_json);
+          // log saved  
+          var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 13, result_text], function(err) {
+            if (err) console.log("Error inserting access_rest_log: %s", err);
+          });
+        } else {          
+          if(user_detail.length != 0) {
+            if (user_detail[0].username == user.username) {
+              var query = connection.query('SELECT id, username, NameE, LastNameE, org, phone, email, membertype, message FROM User WHERE id = ?', [target.id], function(err, target_detail) {
+                if (err) {
+                  result_text = "Error: "+err;
+                  var response_json = {
+                    events: "POST User Delete Error",
+                    timestamp: getTimestamp(),
+                    result: {
+                      errMsg: "Cannot selecting from database" 
+                    }
+                  }
+                  res.send(response_json);
+                  // log saved  
+                  var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 13, result_text], function(err) {
+                    if (err) console.log("Error inserting access_rest_log: %s", err);
+                  });
+                } else {          
+                  if(target_detail.length != 0) {
+                    if (target_detail[0].username == target.username) {
+                      var query = connection.query("DELETE FROM User WHERE id = ?", [target.id], function(err, rows) {
+                        if (err) {
+                          result_text = "Error: "+err;
+                          var response_json = {
+                            events: "POST User Delete Error",
+                            timestamp: getTimestamp(),
+                            result: {
+                              errMsg: "Cannot updating to database" 
+                            }
+                          }
+                          res.send(response_json);
+                          // log saved  
+                          var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 13, result_text], function(err) {
+                            if (err) console.log("Error inserting access_rest_log: %s", err);
+                          });
+                        }
+                        else {
+                          result_text = "Complete: POST User Delete";
+                          var response_json = {
+                            events: "POST User Delete Complete",
+                            timestamp: getTimestamp(),
+                            result: {
+                              Msg: "POST User Delete Success"
+                            }
+                          }                                
+                          res.send(response_json);
+                          // log saved  
+                          var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 13, result_text], function(err) {
+                            if (err) console.log("Error inserting access_rest_log: %s", err);
+                          }); 
+                        }
+                      });
+                    } else {
+                      result_text = "Error: "+err;
+                      var response_json = {
+                        events: "POST User Delete Error",
+                        timestamp: getTimestamp(),
+                        result: {
+                          errMsg: "Invalid user or target" 
+                        }
+                      }
+                      res.send(response_json);
+                      // log saved  
+                      var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 13, result_text], function(err) {
+                        if (err) console.log("Error inserting access_rest_log: %s", err);
+                      });
+                    }
+                  } else {
+                    result_text = "Error: "+err;
+                    var response_json = {
+                      events: "POST User Delete Error",
+                      timestamp: getTimestamp(),
+                      result: {
+                        errMsg: "Invalid user or target" 
+                      }
+                    }
+                    res.send(response_json);
+                    // log saved  
+                    var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 13, result_text], function(err) {
+                      if (err) console.log("Error inserting access_rest_log: %s", err);
+                    });
+                  }
+                }
+              });
+            } else {
+              result_text = "Error: Not administrator privilege";
+              var response_json = {
+                events: "POST User Delete Error",
+                timestamp: getTimestamp(),
+                result: {
+                  errMsg: "Not administrator privilege" 
+                }
+              }
+              res.send(response_json);
+              // log saved  
+              var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 13, result_text], function(err) {
+                if (err) console.log("Error inserting access_rest_log: %s", err);
+              });
+            }
+          } else {
+            result_text = "Error: Invalid username or id";
+            var response_json = {
+              events: "POST User Delete Error",
+              timestamp: getTimestamp(),
+              result: {
+                errMsg: "Invalid user or target" 
+              }
+            }
+            res.send(response_json);
+            // log saved  
+            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 13, result_text], function(err) {
+              if (err) console.log("Error inserting access_rest_log: %s", err);
+            });
+          }
+        }
+      });
+      connection.release();
+    });
+  }
 };
 
+/* ID: 14 GET [admin] all user
+  in: /rest/user/all?id=22&username=admin
+  out: {events, timestamp, result:{Msg, user_list:[id, username, NameE, LastNameE, email, org, phone, message]}} 
+*/
+var user_all_rest = function(req, res) {
+  var url_parts = url.parse(req.url, true);
+  var url_query = url_parts.query;
+  var result_text = "";
+  var response_json = "";
 
+  res.set('Content-Type', 'application/json');
 
+  if(url_query.id == undefined) {
+    result_text = "Error: Invalid username or id";
+      var response_json = {
+        events: "GET All User Error",
+        timestamp: getTimestamp(),
+        result: {
+          errMsg: "Invalid username or id" 
+        }
+    }
+    res.send(response_json);
+    // log saved  
+    var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), 0, 14, result_text], function(err) {
+      if (err) console.log("Error inserting access_rest_log: %s", err);
+    });    
+  } else {
+    req.getConnection(function(err, connection) {
+      var query = connection.query('SELECT id, username, NameE, LastNameE, org, phone, email, membertype, message FROM User WHERE id = ?', [url_query.id], function(err, user_detail) {
+        if (err) {
+          result_text = "Error: "+err;
+          var response_json = {
+            events: "GET All User Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Cannot selecting from database" 
+            }
+          }
+          res.send(response_json);
+          // log saved  
+          var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 14, result_text], function(err) {
+            if (err) console.log("Error inserting access_rest_log: %s", err);
+          });
+        } else {
+          if(user_detail.length != 0){ 
+            if (user_detail[0].username == url_query.username) {
+              var query = connection.query('SELECT id, username, NameE, LastNameE, org, phone, email, membertype, role, flag, message FROM User WHERE role IS NOT NULL', function(err, user_list) {
+                if (err) {
+                  result_text = "Error: "+err;
+                  var response_json = {
+                    events: "GET All User Error",
+                    timestamp: getTimestamp(),
+                    result: {
+                      errMsg: "Cannot selecting from database" 
+                    }
+                  }               
+                } else {
+                  result_text = "Complete: GET All User";
+                  var response_json = {
+                    events: "GET All User Complete",
+                    timestamp: getTimestamp(),
+                    result: {
+                      Msg: "GET All User Success",
+                      user_list: user_list
+                    }
+                  }                 
+                }
+                res.send(response_json);
+                // log saved  
+                var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 14, result_text], function(err) {
+                  if (err) console.log("Error inserting access_rest_log: %s", err);
+                });
+              });
+            } else {
+              result_text = "Error: Not administrator privilege";
+              var response_json = {
+                events: "GET All User Error",
+                timestamp: getTimestamp(),
+                result: {
+                  errMsg: "Not administrator privilege" 
+                }
+              }
+              res.send(response_json);
+              // log saved  
+              var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 14, result_text], function(err) {
+                if (err) console.log("Error inserting access_rest_log: %s", err);
+              });
+            }            
+          } else { 
+            result_text = "Error: Invalid username or id";
+            var response_json = {
+              events: "GET All User Error",
+              timestamp: getTimestamp(),
+              result: {
+                errMsg: "Invalid username or id" 
+              }
+            }
+            res.send(response_json);
+            // log saved  
+            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 14, result_text], function(err) {
+              if (err) console.log("Error inserting access_rest_log: %s", err);
+            });
+          }
+        }
+      });
+      connection.release();
+    });
+  }
+};
 
+/* ID: 15 GET [admin] user access logs
+  in: /rest/user/logs?id=22&username=admin or /rest/user/logs?id=22&username=admin&limit=20
+  out: {events, timestamp, result:{Msg, logs:[user, nameE, timestamp]}} 
+*/
+var user_accesslogs_rest = function(req, res) {
+  var url_parts = url.parse(req.url, true);
+  var url_query = url_parts.query;
 
+  var result_text = "";
+  var response_json = "";
 
+  res.set('Content-Type', 'application/json');
 
+  if(url_query.id == undefined) {
+    result_text = "Error: Invalid username or id";
+    var response_json = {
+      events: "GET User Access Logs Error",
+      timestamp: getTimestamp(),
+      result: {
+        errMsg: "Invalid username or id" 
+      }
+    }
+    res.send(response_json);
+    // log saved  
+    var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), 0, 15, result_text], function(err) {
+      if (err) console.log("Error inserting access_rest_log: %s", err);
+    });    
+  } else {
+    req.getConnection(function(err, connection) {
+      var query = connection.query('SELECT id, username, NameE, LastNameE, org, phone, email, membertype, message FROM User WHERE id = ?', [url_query.id], function(err, user_detail) {
+        if (err) {
+          result_text = "Error: "+err;
+          var response_json = {
+            events: "GET User Access Logs Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Cannot selecting from database" 
+            }
+          }
+          res.send(response_json);
+          // log saved  
+          var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 15, result_text], function(err) {
+            if (err) console.log("Error inserting access_rest_log: %s", err);
+          });
+        } else {
+          if(user_detail.length != 0){ 
+            if (user_detail[0].username == url_query.username) {
+              var n = 50;
+              if(url_query.n != undefined) n = url_query.n;
+              var query_str = 'SELECT user, actionType.nameE , DATE_FORMAT(timestamp, "%Y/%m/%d %H:%i:%S") AS timestamp FROM accessLogs INNER JOIN actionType ON accessLogs.action = actionType.action ORDER BY id DESC LIMIT '+n;
+              var query = connection.query(query_str, function(err, logs) {
+                if (err) {
+                  result_text = "Error: "+err;
+                  var response_json = {
+                    events: "GET User Access Logs Error",
+                    timestamp: getTimestamp(),
+                    result: {
+                      errMsg: "Cannot selecting from database" 
+                    }
+                  }              
+                } else {
+                  result_text = "Complete: GET User Access Logs";
+                  var response_json = {
+                    events: "GET User Access Logs Complete",
+                    timestamp: getTimestamp(),
+                    result: {
+                      Msg: "GET User Access Logs Success",
+                      logs: logs
+                    }
+                  }                 
+                }
+                res.send(response_json);
+                // log saved  
+                var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 15, result_text], function(err) {
+                  if (err) console.log("Error inserting access_rest_log: %s", err);
+                });
+              });
+            } else {
+              result_text = "Error: Not administrator privilege";
+              var response_json = {
+                events: "GET User Access Logs Error",
+                timestamp: getTimestamp(),
+                result: {
+                  errMsg: "Not administrator privilege" 
+                }
+              }
+              res.send(response_json);
+              // log saved  
+              var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 15, result_text], function(err) {
+                if (err) console.log("Error inserting access_rest_log: %s", err);
+              });
+            }            
+          } else { 
+            result_text = "Error: Invalid username or id";
+            var response_json = {
+              events: "GET User Access Logs Error",
+              timestamp: getTimestamp(),
+              result: {
+                errMsg: "Invalid username or id" 
+              }
+            }
+            res.send(response_json);
+            // log saved  
+            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 15, result_text], function(err) {
+              if (err) console.log("Error inserting access_rest_log: %s", err);
+            });
+          }
+        }
+      });
+      connection.release();
+    });
+  }
+};
 
+/* ID: 16 POST user signup
+  in: /rest/user/signup {username, password, NameE, LastNameE, org, phone, email, message}
+  out: {events, timestamp, result:{Msg}} 
+*/
+var user_signup_rest = function(req, res) {
+  var body = JSON.parse(JSON.stringify(req.body));
+  var password = body.password;
+  var hash = bcrypt.hashSync(password);
+  var user_form = {
+    username: body.username,
+    password: hash,
+    NameE: body.NameE,
+    LastNameE: body.LastNameE,
+    org: body.org,
+    phone: body.phone,
+    email: body.email,
+    membertype: 0,
+    flag: 0,
+    message: body.message
+  };
+  var result_text = "";
+  var response_json = "";
+
+  res.set('Content-Type', 'application/json');
+
+  if(body == undefined || body.username == undefined || body.password == undefined || body.NameE == undefined || body.LastNameE == undefined || body.org == undefined || body.phone == undefined || body.email == undefined || body.message == undefined) {
+    result_text = "Error: Invalid Sign Up Form";
+    var response_json = {
+      events: "POST Sign Up Error",
+      timestamp: getTimestamp(),
+      result: {
+        errMsg: "Invalid user or target" 
+      }
+    }
+    res.send(response_json);
+    // log saved  
+    var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), 0, 16, result_text], function(err) {
+      if (err) console.log("Error inserting access_rest_log: %s", err);
+    });    
+  } else {
+    req.getConnection(function(err, connection) {
+      var query = connection.query("INSERT INTO `User` SET ?", user_form, function(err) {
+        if (err) {
+          result_text = "Error: "+err;
+          var response_json = {
+            events: "POST Sign Up Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Cannot inserting to database" 
+            }
+          } 
+        } else {
+          result_text = "Complete: POST Sign Up";
+          var response_json = {
+            events: "POST Sign Up Complete",
+            timestamp: getTimestamp(),
+            result: {
+              Msg: "POST Sign Up Success"
+            }
+          }
+        }        
+        res.send(response_json);
+        // log saved  
+        var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), 0, 16, result_text], function(err) {
+          if (err) console.log("Error inserting access_rest_log: %s", err);
+        });
+      });
+      connection.release();
+    });
+  }
+};
+
+/* ID: 17 GET rest access logs
+  in: /rest/logs or /rest/logs?n=3
+  out: {events, timestamp, result:{Msg, logs:[id, timestamp, userid, accessType, result]}} 
+*/
+var user_accesslogs_rest = function(req, res) {  
+  var url_parts = url.parse(req.url, true);
+  var url_query = url_parts.query;
+
+  res.set('Content-Type', 'application/json');  
+  
+  req.getConnection(function(err, connection) {
+    var n = 50;
+    if(url_query.n != undefined) n = url_query.n;
+      var query_str = 'SELECT * FROM access_rest_log ORDER BY id DESC LIMIT '+n;
+      var query = connection.query(query_str, function(err, logs) {
+        if (err) {
+          var response_json = {
+            events: "GET REST Access Logs Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Cannot selecting from database" 
+            }
+          }
+          console.log("Error: "+err);               
+        } else {
+          var response_json = {
+            events: "GET REST Access Logs Complete",
+            timestamp: getTimestamp(),
+            result: {
+              Msg: "GET REST Access Logs Success",
+              logs: logs
+            }
+          }
+          console.log("Complete: GET REST Access Logs");                 
+        }
+        res.send(response_json);
+      });
+    connection.release();
+  });
+};
 
 //POST add request
 var add_rest_service = function(req, res) {
@@ -2857,4 +3348,9 @@ module.exports.user_requested_rest = user_requested_rest;
 module.exports.user_accept_rest = user_accept_rest;
 module.exports.user_edit_rest = user_edit_rest;
 module.exports.user_delete_rest = user_delete_rest;
+module.exports.user_all_rest = user_all_rest;
+module.exports.user_accesslogs_rest = user_accesslogs_rest;
 // END ADMIN ONLY
+//signup & restaccesslogs
+module.exports.user_signup_rest = user_signup_rest;
+module.exports.user_accesslogs_rest = user_accesslogs_rest;
