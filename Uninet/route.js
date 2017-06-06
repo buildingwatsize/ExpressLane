@@ -1793,7 +1793,7 @@ var services_requested_rest = function(req, res) {
         } else {
           if(user_detail.length != 0){ 
             if (user_detail[0].username == url_query.username) {
-              var query = connection.query('SELECT ResourceAllocated.said, User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actbyuser != 1 and actType = 0', function(err, service_requested) {
+              var query = connection.query('SELECT ResourceAllocated.said, User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actbyuser != 1 and actType = 0 ORDER BY said DESC', function(err, service_requested) {
                 if (err) {
                   result_text = "Error: "+err;
                   var response_json = {
@@ -3005,7 +3005,7 @@ var user_signup_rest = function(req, res) {
   in: /rest/logs or /rest/logs?n=3
   out: {events, timestamp, result:{Msg, logs:[id, timestamp, userid, accessType, result]}} 
 */
-var user_accesslogs_rest = function(req, res) {  
+var access_logs_rest = function(req, res) {  
   var url_parts = url.parse(req.url, true);
   var url_query = url_parts.query;
 
@@ -3101,7 +3101,7 @@ var add_service_rest = function(req, res) {
                       var data_serviceac = {
                         sid: result_sid[0].sid, 
                         actType: 0, 
-                        actbyuser: 1
+                        actbyuser: 0
                       }
                       var query = connection.query("INSERT INTO ServiceActivities SET ?", data_serviceac, function(err) {
                         if (err) console.log("Error inserting ServiceActivities: %s ", err);
@@ -3478,7 +3478,7 @@ var delete_service_rest = function(req, res) {
             } else {
               result_text = "Error: Invalid password";
               var response_json = {
-                events: "POST Service Edit Error",
+                events: "POST Service Delete Error",
                 timestamp: getTimestamp(),
                 result: {
                   errMsg: "Invalid password" 
@@ -3493,7 +3493,7 @@ var delete_service_rest = function(req, res) {
           } else {
             result_text = "Error: Invalid username";
             var response_json = {
-              events: "POST Service Edit Error",
+              events: "POST Service Delete Error",
               timestamp: getTimestamp(),
               result: {
                 errMsg: "Invalid username" 
@@ -3502,6 +3502,259 @@ var delete_service_rest = function(req, res) {
             res.send(response_json);
             // log saved  
             var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 20, result_text], function(err) {
+              if (err) console.log("Error inserting access_rest_log: %s", err);
+            });
+          }
+        }
+      });
+      connection.release();
+    });
+  }
+};
+
+/* ID: 21 POST accept service rest
+  in: /rest/service/accept {user:{username,password}, service_accept:{said}}
+  out: {events, timestamp, result:{Msg}}
+*/
+var accept_service_rest = function(req, res) {
+  var body = JSON.parse(JSON.stringify(req.body));
+  var user = body.user;
+  var service_accept = body.service_accept;
+
+  var password = user.password;
+
+  var result_text = "";
+  var response_json = "";
+
+  res.set('Content-Type', 'application/json');
+
+  if(body == undefined || user == undefined || service_accept == undefined || user.username == undefined || user.password == undefined || service_accept.said == undefined) {
+    result_text = "Error: Invalid Service Accept Form";
+    var response_json = {
+      events: "POST Service Accept Error",
+      timestamp: getTimestamp(),
+      result: {
+        errMsg: "Invalid user or service_accept" 
+      }
+    }
+    res.send(response_json);
+    // log saved  
+    var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), 0, 21, result_text], function(err) {
+      if (err) console.log("Error inserting access_rest_log: %s", err);
+    });    
+  } else {
+    req.getConnection(function(err, connection) {
+      var query = connection.query('SELECT id, username, password FROM User WHERE username = ?', [user.username], function(err, user_detail) {
+        if (err) {
+          result_text = "Error: "+err;
+          var response_json = {
+            events: "POST Service Accept Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Cannot selecting from database" 
+            }
+          }
+          res.send(response_json);
+          // log saved  
+          var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 21, result_text], function(err) {
+            if (err) console.log("Error inserting access_rest_log: %s", err);
+          });
+        } else {
+          if(user_detail.length != 0) { 
+            if (bcrypt.compareSync(password, user_detail[0].password)) {
+              var query = connection.query('SELECT * FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE ResourceAllocated.said = ?', [service_accept.said], function(err, result) {
+                if (err) {
+                  console.log("Error selecting ResourceAllocated: %s ", err);
+                  result_text = "Error: "+err;
+                  var response_json = {
+                    events: "POST Service Accept Error",
+                    timestamp: getTimestamp(),
+                    result: {
+                      errMsg: "Cannot selecting from database" 
+                    }
+                  }
+                  res.send(response_json);
+                  // log saved  
+                  var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 21, result_text], function(err) {
+                    if (err) console.log("Error inserting access_rest_log: %s", err);
+                  });
+                } else {
+                  var data = {
+                    said: result[0].said,
+                    username: result[0].username,
+                    resourceString1: result[0].resourceString1,
+                    resourceString2: result[0].resourceString2,
+                    IP1: result[0].IP1,
+                    IP2: result[0].IP2,
+                    startTime: result[0].startTime,
+                    endTime: result[0].endTime
+                  };
+                  //Service Actived
+                  if (result[0].startTime <= new Date()) {
+                    var query = connection.query("INSERT INTO ActivePackage SET ?", data, function(err, rows) {
+                      if (err) {
+                        console.log("Error inserting ActivePackage: %s ", err);
+                        result_text = "Error: "+err;
+                        var response_json = {
+                          events: "POST Service Accept Error",
+                          timestamp: getTimestamp(),
+                          result: {
+                            errMsg: "Cannot inserting to database" 
+                          }
+                        }
+                        res.send(response_json);
+                        // log saved  
+                        var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 21, result_text], function(err) {
+                          if (err) console.log("Error inserting access_rest_log: %s", err);
+                        });
+                      } else {
+                        var query = connection.query("UPDATE ServiceActivities SET actType = 7 WHERE said = ? ", [id], function(err, rows) {
+                          if (err) {
+                            console.log("Error updating ServiceActivities: %s ", err);
+                            result_text = "Error: "+err;
+                            var response_json = {
+                              events: "POST Service Accept Error",
+                              timestamp: getTimestamp(),
+                              result: {
+                                errMsg: "Cannot updating ServiceActivities to database" 
+                              }
+                            }
+                            res.send(response_json);
+                            // log saved  
+                            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 21, result_text], function(err) {
+                              if (err) console.log("Error inserting access_rest_log: %s", err);
+                            });
+                          } else {
+                            var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,7 FROM ServiceActivities WHERE said = ?", [id], function(err) {
+                              if (err) {
+                                console.log("Error inserting ServiceLogs: %s ", err);
+                                result_text = "Error: "+err;
+                                var response_json = {
+                                  events: "POST Service Accept Error",
+                                  timestamp: getTimestamp(),
+                                  result: {
+                                    errMsg: "Cannot inserting ServiceLogs to database" 
+                                  }
+                                }
+                                res.send(response_json);
+                                // log saved  
+                                var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 21, result_text], function(err) {
+                                  if (err) console.log("Error inserting access_rest_log: %s", err);
+                                });
+                              } else {
+                                result_text = "Complete: POST Service Accept";
+                                var response_json = {
+                                  events: "POST Service Accept Complete",
+                                  timestamp: getTimestamp(),
+                                  result: {
+                                    Msg: "POST Service Accept Success" 
+                                  }
+                                }
+                                res.send(response_json);
+                                // log saved  
+                                var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 21, result_text], function(err) {
+                                  if (err) console.log("Error inserting access_rest_log: %s", err);
+                                });
+                              }
+                            });
+                          }
+                        });
+                      }
+                    });
+                  } else {
+                    //Service Approved
+                    var query = connection.query("UPDATE ServiceActivities SET actType = 4 WHERE said = ? ", [service_accept.said], function(err, rows) {
+                      if (err) {
+                        console.log("Error updating ServiceActivities: %s ", err);
+                        result_text = "Error: "+err;
+                        var response_json = {
+                          events: "POST Service Accept Error",
+                          timestamp: getTimestamp(),
+                          result: {
+                            errMsg: "Cannot updating ServiceActivities to database" 
+                          }
+                        }
+                        res.send(response_json);
+                        // log saved  
+                        var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 21, result_text], function(err) {
+                          if (err) console.log("Error inserting access_rest_log: %s", err);
+                        });
+                      } else {
+                        var query = connection.query("INSERT INTO ServiceLogs(said,actType) SELECT ServiceActivities.said,4 FROM ServiceActivities WHERE said = ?", [service_accept.said], function(err) {
+                          if (err) {
+                            console.log("Error inserting ServiceLogs: %s ", err);
+                            result_text = "Error: "+err;
+                            var response_json = {
+                              events: "POST Service Accept Error",
+                              timestamp: getTimestamp(),
+                              result: {
+                                errMsg: "Cannot inserting ServiceLogs to database" 
+                              }
+                            }
+                            res.send(response_json);
+                            // log saved  
+                            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 21, result_text], function(err) {
+                              if (err) console.log("Error inserting access_rest_log: %s", err);
+                            });
+                          } else { 
+                            result_text = "Complete: POST Service Accept";
+                            var response_json = {
+                              events: "POST Service Accept Complete",
+                              timestamp: getTimestamp(),
+                              result: {
+                                Msg: "POST Service Accept Success" 
+                              }
+                            }
+                            res.send(response_json);
+                            // log saved  
+                            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 21, result_text], function(err) {
+                              if (err) console.log("Error inserting access_rest_log: %s", err);
+                            });
+                          }
+                        });
+                      }
+                    });
+                  }
+                  //Email & Saved Log
+                  var infomation = {
+                    NameUser: result[0].NameE,
+                    LastnameUser: result[0].LastNameE,
+                    SAID: result[0].said,
+                    startTime: result[0].startTime,
+                    endTime: result[0].endTime,
+                    IP1: result[0].IP1,
+                    IP2: result[0].IP2  
+                  };              
+                  email_sender(6, user_detail[0].id, infomation);
+                }
+              });
+            } else {
+              result_text = "Error: Invalid password";
+              var response_json = {
+                events: "POST Service Accept Error",
+                timestamp: getTimestamp(),
+                result: {
+                  errMsg: "Invalid password" 
+                }
+              }
+              res.send(response_json);
+              // log saved  
+              var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 21, result_text], function(err) {
+                if (err) console.log("Error inserting access_rest_log: %s", err);
+              });
+            }
+          } else {
+            result_text = "Error: Invalid username";
+            var response_json = {
+              events: "POST Service Accept Error",
+              timestamp: getTimestamp(),
+              result: {
+                errMsg: "Invalid username" 
+              }
+            }
+            res.send(response_json);
+            // log saved  
+            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user_detail[0].id, 21, result_text], function(err) {
               if (err) console.log("Error inserting access_rest_log: %s", err);
             });
           }
@@ -3590,14 +3843,16 @@ function addZero(i) {
 
 // ADDITION get Timestamp
 function getTimestamp(){
+  //JavaScript counts months from 0 to 11. January is 0. December is 11.
   var d = new Date();
   var Y = d.getFullYear();
-  var M = addZero(d.getMonth());
+  var M = addZero(d.getMonth()+1);
   var D = addZero(d.getDate());
   var h = addZero(d.getHours());
   var m = addZero(d.getMinutes());
   var s = addZero(d.getSeconds());
-  return Y+"-"+M+"-"+D+" "+h+":"+m+":"+s;
+  var timestamp = Y+"-"+M+"-"+D+" "+h+":"+m+":"+s;
+  return timestamp;
 }
 
 // ADDITION DELETED FUNCTION RESPONSE
@@ -3707,8 +3962,9 @@ module.exports.user_accesslogs_rest = user_accesslogs_rest;
 // END ADMIN ONLY
 // signup & restaccesslogs
 module.exports.user_signup_rest = user_signup_rest;
-module.exports.user_accesslogs_rest = user_accesslogs_rest;
+module.exports.access_logs_rest = access_logs_rest;
 // services_add_edit_delete
 module.exports.add_service_rest = add_service_rest;
 module.exports.edit_service_rest = edit_service_rest;
 module.exports.delete_service_rest = delete_service_rest;
+module.exports.accept_service_rest = accept_service_rest;

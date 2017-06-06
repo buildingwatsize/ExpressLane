@@ -156,11 +156,12 @@ app.post('/rest/user/delete', route.user_delete_rest);
 app.get('/rest/user/all', route.user_all_rest);
 app.get('/rest/user/logs', route.user_accesslogs_rest);
 app.post('/rest/user/signup', route.user_signup_rest);
-app.get('/rest/logs', route.user_accesslogs_rest);
+app.get('/rest/logs', route.access_logs_rest);
 
 app.post('/rest/services/add', route.add_service_rest, route.check);
 app.post('/rest/services/edit', route.edit_service_rest, route.check);
 app.post('/rest/services/delete', route.delete_service_rest);
+app.post('/rest/services/accept', route.accept_service_rest);
 
 /********************************/
 //server start alert

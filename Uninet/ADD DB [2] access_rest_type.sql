@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jun 06, 2017 at 02:31 PM
+-- Generation Time: Jun 06, 2017 at 04:49 PM
 -- Server version: 5.7.18-0ubuntu0.16.04.1
 -- PHP Version: 7.0.15-0ubuntu0.16.04.4
 
@@ -55,7 +55,8 @@ INSERT INTO `access_rest_type` (`aid`, `name`) VALUES
 (17, 'Access REST Logs'),
 (18, 'Services Add'),
 (19, 'Services Edit'),
-(20, 'Services Delete');
+(20, 'Services Delete'),
+(21, 'Services Accept');
 
 --
 -- Indexes for dumped tables
@@ -75,7 +76,7 @@ ALTER TABLE `access_rest_type`
 -- AUTO_INCREMENT for table `access_rest_type`
 --
 ALTER TABLE `access_rest_type`
-  MODIFY `aid` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `aid` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
