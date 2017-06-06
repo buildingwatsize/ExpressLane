@@ -158,9 +158,9 @@ app.get('/rest/user/logs', route.user_accesslogs_rest);
 app.post('/rest/user/signup', route.user_signup_rest);
 app.get('/rest/logs', route.user_accesslogs_rest);
 
-app.post('/add_rest_service', route.add_rest_service);
-app.post('/edit_rest_service', route.edit_rest_service);
-app.post('/delete_rest_service', route.delete_rest_service);
+app.post('/rest/services/add', route.add_service_rest, route.check);
+app.post('/rest/services/edit', route.edit_service_rest, route.check);
+app.post('/rest/services/delete', route.delete_service_rest);
 
 /********************************/
 //server start alert
