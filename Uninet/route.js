@@ -10,6 +10,7 @@ var bcrypt = require('bcrypt-nodejs');
 var cron = require('node-schedule'); //node-schedule
 var Model = require('./models/model');
 var mysql = require('mysql'); //mysql
+var spawn = require('child_process').spawn; //exec globus commands
 var connection = mysql.createConnection({ //database setting
   host: 'localhost', //database IP
   user: 'root',
@@ -1254,6 +1255,61 @@ var doc_page = function(req, res) {
 var pdf = function(req, res) {
   var file = __dirname + '/PDF/UniNet-Express-Guildline.pdf';
   res.download(file); // Set disposition and send it.
+};
+
+//GET Globus main page
+var globus_page = function(req, res) {  
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
+    var user = req.user;
+    if (user !== undefined) user = user.toJSON();
+    if (user.role !== 1) { //member
+      req.getConnection(function(err, connection) {
+        var query = connection.query('SELECT id, username FROM User WHERE id = ?', [user.id], function(err, user_detail) {
+          if (err) console.log("Error selecting User Detail: ",err);
+          else {
+            var query = connection.query('SELECT globus_logs.id, userid, User.username, status, globus_status_type.name, source, destination, start, end, speed FROM globus_logs INNER JOIN globus_status_type ON globus_logs.status = globus_status_type.id INNER JOIN User ON User.id = globus_logs.userid WHERE userid = ? ORDER BY globus_logs.id DESC',[user.id] , function(err, request) {
+              if (err) console.log("Error selecting Request Detail: ",err);
+              else {
+                res.render('globus', {
+                  title: "Globus Service",          
+                  user: user,
+                  request: request
+                });
+              }
+            });
+          } 
+        });
+        connection.release();
+      });
+    }
+    else { //admin
+      req.getConnection(function(err, connection) {
+        var query = connection.query('SELECT id, username FROM User WHERE id = ?', [user.id], function(err, user_detail) {
+          if (err) console.log("Error selecting User Detail: ",err);
+          else {
+            var query = connection.query('SELECT globus_logs.id, userid, User.username, status, globus_status_type.name, source, destination, start, end, speed FROM globus_logs INNER JOIN globus_status_type ON globus_logs.status = globus_status_type.id INNER JOIN User ON User.id = globus_logs.userid WHERE userid = ? ORDER BY globus_logs.id DESC',[user.id] , function(err, request) {
+              if (err) console.log("Error selecting Request Detail: ",err);
+              else {
+                var query = connection.query('SELECT globus_logs.id, userid, User.username, status, globus_status_type.name, source, destination, start, end, speed FROM globus_logs INNER JOIN globus_status_type ON globus_logs.status = globus_status_type.id INNER JOIN User ON User.id = globus_logs.userid ORDER BY globus_logs.id DESC', function(err, history) {
+                  if (err) console.log("Error selecting History Detail: ",err);
+                  else {
+                    res.render('globus', {
+                      title: "Globus Service",          
+                      user: user,
+                      request: request,
+                      history: history
+                    });
+                  }
+                });
+              }
+            });
+          } 
+        });         
+        connection.release();
+      });
+    }
+  }
 };
 
 //GET contact page
@@ -3765,6 +3821,177 @@ var accept_service_rest = function(req, res) {
   }
 };
 
+/* pre-function: Globus
+  in: 
+  out: 
+*/
+var add_globus_rest = function(req, res) {
+  var body = JSON.parse(JSON.stringify(req.body));
+  var user = body.user;
+  var globus_request = body.globus_request;
+  var result_text = "";
+
+  res.set('Content-Type', 'application/json');
+
+  if (body == undefined || user == undefined || user.id == undefined || user.username == undefined || globus_request == undefined || globus_request.source == undefined || globus_request.destination == undefined) {
+    result_text = "Error: Invalid Globus Add Form";
+    var response_json = {
+      events: "POST Globus Add Error",
+      timestamp: getTimestamp(),
+      result: {
+        errMsg: "Invalid user or globus_request" 
+      }
+    }
+    res.send(response_json);
+    // log saved  
+    var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), 0, 22, result_text], function(err) {
+      if (err) console.log("Error inserting access_rest_log: %s", err);
+    });
+  } else { //data is valid
+    req.getConnection(function(err, connection) {
+      var query = connection.query('SELECT id, username FROM User WHERE username = ?', [user.username], function(err, user_detail) {
+        if (err) {
+          result_text = "Error: "+err;
+          var response_json = {
+            events: "POST Globus Add Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Cannot selecting User Detail from database" 
+            }
+          }
+          res.send(response_json);
+          // log saved  
+          var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 22, result_text], function(err) {
+            if (err) console.log("Error inserting access_rest_log: %s", err);
+          });
+        } else {
+          if(user_detail.length != 0 && user_detail[0].id == user.id) { 
+
+            var result = "";
+            var str = "";
+            var en = false;
+
+            //before this i will check valid data (src & des) so if pass it'll go on [FUTURE]
+            var rest_result = {
+              "events": "Complete: Globus Request",
+              "timestamp": getTimestamp(),
+              "result": {
+                "request_by": ""+user.username,
+                "from": ""+globus_request.source,
+                "to": ""+globus_request.destination,
+                "Msg": "Globus Request Success, If your request information is correct your data is transferring",
+              }
+            }
+            res.send(rest_result);
+            // log saved REST 
+            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 22, result_text], function(err) {
+              if (err) console.log("Error inserting access_rest_log: %s", err);
+            });
+            // log saved Globus
+            var query = connection.query('INSERT INTO globus_logs(userid, status, start, source, destination) VALUES (?,?,?,?,?)', [user.id, 1, getTimestamp(), globus_request.source, globus_request.destination], function(err) {
+              if (err) console.log("Error inserting globus_logs [active]: %s", err);
+            });
+
+            //start Globus transporter
+            var child = spawn("expect", ["remote.exp", ""+globus_request.source, ""+globus_request.destination]);
+            
+            //when executing
+            child.stdout.on('data', function(chunk) {
+              // output will be here in chunk
+              var result_str = chunk.toString();
+
+              // in this line we can get some speed to show the progress speed/time like real-time by updating DB in speed column [FUTURE]
+
+              //start slice data begin on "Source:" to the end
+              if (result_str.match("Source:")) en = true;
+              if (result_str.match("quser@donkey:")) en = false;
+              if (en) {
+                console.log(result_str); //DEBUG SEE DATA FLOWING IN CONSOLE
+                str = str + result_str;
+              }
+              //end slice data
+            });
+
+            // when end of executing
+            child.on('exit', function (code) {
+              console.log("\n----Transfer Log----");
+
+              // Lean the data - remove space and etc.
+              str = str.replace(/[^\x20-\x7E]/gmi, "");
+              var str_split = str.split(" ");
+              var transfer_result = [];
+              for (var j=0;j<str_split.length;j++) {
+                 if (str_split[j] != "" && str_split[j] != "\n" && str_split[j] != "\r") {
+                    transfer_result.push(str_split[j]);
+                 }
+              }
+
+              if (transfer_result[transfer_result.length-1] == 'inst') {
+                // Find first row data
+                //for get first index of column of bytes
+                var first_rows_index; 
+                for (i=0;i<transfer_result.length;i++) {
+                  if (transfer_result[i] == 'bytes') {
+                    first_rows_index = i-1;
+                    // so we will count from start first_rows_index(6) to last_rows_index(all-8)
+                    // and to find number of rows is divides of 8 (8 is data in each rows) 
+                    // and the example we can calculate (e.g.10GBfile):
+                    //   transfer_result.length-8 = 150-8=142 // 150 is all / 8 is data in each rows(0-7) / 142 is the last row)
+                    // index_now is first index data of each rows (and 8 is next first index data of next row)
+                    var last_rows_index = transfer_result.length-8;
+                    var number_rows = ((last_rows_index-first_rows_index) / 8) + 1;
+                    var speed_avg;
+                    for (var each_row=0;each_row<number_rows;each_row++) {      
+                      var index_now = first_rows_index+(8*each_row);
+                      var size_now = transfer_result[index_now]/(1024*1024); //MB
+                      speed_avg = transfer_result[index_now+2]; //MB/s
+                      console.log("| "+(each_row+1)+" | Transfered: "+ size_now +" MB | Speed Average: "+ speed_avg +" MB/s |");
+                    }   
+
+                    // log update Globus
+                    var query = connection.query('UPDATE globus_logs SET status = ?, end = ?, speed = ? WHERE userid = ? ORDER BY id DESC LIMIT 1', [2, getTimestamp(), speed_avg*8.0, user.id], function(err) {
+                      if (err) console.log("Error updating globus_logs [complete]: %s", err);
+                    });
+
+                    console.log("\nTransfer Done !"); 
+                    break;
+                  }
+                }
+              } else {
+                // when globus can't transfer something like not found a file
+                
+                // log update Globus
+                var query = connection.query('UPDATE globus_logs SET status = ?, end = ? WHERE userid = ? ORDER BY id DESC LIMIT 1', [3, getTimestamp(), user.id], function(err) {
+                  if (err) console.log("Error updating globus_logs [error]: %s", err);
+                });
+
+                var transfer_error_message = "Error: Please try again or re-check your file is valid or correct directory...";
+                console.log(transfer_error_message);
+                console.log("\nTransfer Done !"); 
+              }
+            });
+          } else {
+            result_text = "Error: Invalid username or id";
+            var response_json = {
+              events: "POST Globus Add Error",
+              timestamp: getTimestamp(),
+              result: {
+                errMsg: "Invalid username or id" 
+              }
+            }
+            res.send(response_json);
+            // log saved  
+            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 22, result_text], function(err) {
+              if (err) console.log("Error inserting access_rest_log: %s", err);
+            });
+          }
+        }
+      });
+      connection.release();
+    });
+  }
+};
+
 // I'm fixing about only administrators privilege
 // <<--- END REST API Dev --->>
 
@@ -3889,7 +4116,15 @@ function deleted_response(res, user_id, deleted_status) {
     }
     connection.release();
   });
-} 
+}
+
+// ADDITION [TOOLS] CHECK INPUT POST FORM AND RESPONSE TO JSON FORMAT 
+var checkpostform = function (req, res) {
+  var input = JSON.parse(JSON.stringify(req.body));
+  console.log(input);
+  res.set('Content-Type', 'application/json');
+  res.send(input);
+};
 
 // export functions
 /**************************************/
@@ -3937,6 +4172,10 @@ module.exports.signOut = signOut;
 module.exports.pdf = pdf;
 module.exports.doc_page = doc_page;
 module.exports.contact = contact;
+//GLOBUS 
+module.exports.globus_page = globus_page;
+//TOOLS
+module.exports.checkpostform = checkpostform;
 /***************************************/
 // REST APIs
 /***************************************/
@@ -3968,3 +4207,5 @@ module.exports.add_service_rest = add_service_rest;
 module.exports.edit_service_rest = edit_service_rest;
 module.exports.delete_service_rest = delete_service_rest;
 module.exports.accept_service_rest = accept_service_rest;
+// globus
+module.exports.add_globus_rest = add_globus_rest;

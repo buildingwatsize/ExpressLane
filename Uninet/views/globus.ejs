@@ -1,0 +1,253 @@
+<!doctype html>
+<!-- Service Manage Page -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title> UniNet Express Lane Services </title>
+  <!-- core CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/font-awesome.min.css" rel="stylesheet">    
+  <link href="css/animate.min.css" rel="stylesheet">
+  <link href="css/owl.carousel.css" rel="stylesheet">
+  <link href="css/owl.transitions.css" rel="stylesheet">
+  <link href="css/prettyPhoto.css" rel="stylesheet">
+  <link href="css/main.css" rel="stylesheet">
+  <link href="css/responsive.css" rel="stylesheet">
+  <link href="css/jquery.dataTables.min.css" rel="stylesheet">
+  <!--[if lt IE 9]>
+  <script src="js/html5shiv.js"></script>
+  <script src="js/respond.min.js"></script>
+  <![endif]-->    
+
+  <!-- Alternative Style -->
+  <!-- <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css"> -->
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="http://maps.google.com/maps/api/js?sensor=true"></script>
+  <script src="js/owl.carousel.min.js"></script>
+  <script src="js/mousescroll.js"></script>
+  <script src="js/smoothscroll.js"></script>
+  <script src="js/jquery.prettyPhoto.js"></script>
+  <script src="js/jquery.isotope.min.js"></script>
+  <script src="js/jquery.inview.min.js"></script>
+  <script src="js/wow.min.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/jquery.dataTables.min.js"></script> 
+</head>
+
+<body>
+
+  <header id="header">
+    <nav id="main-menu" class="navbar navbar-default navbar-fixed-top" role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><img src="uninet_navbar.gif" style="display:inline-block; height:60px" alt="logo">&nbsp;&nbsp;&nbsp;
+          <font>UniNet Express Lane Services</font></a>
+        </div>
+        <% if(user.role===1){%>
+          <div class="collapse navbar-collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li class="scroll"><a href="/">Home</a></li>
+              <li class="scroll"><a href="/#about">About</a></li>
+              <li class="scroll"><a href="/status">Status</a></li>
+              <li class="scroll"><a href="/user">User Management</a></li>
+              <li class="scroll"><a href="/emailmanage">Email Management</a></li>
+              <li class="scroll"><a href="/servicemanage">Service Management</a></li>
+              <li class="scroll active"><a href="/globus">Globus Service</a></li>
+            </ul>
+          </div>
+        <% } else { %>
+          <div class="collapse navbar-collapse navbar-right">
+            <ul class="nav navbar-nav">
+              <li class="scroll"><a href="/">Home</a></li>
+              <li class="scroll"><a href="/#about">About</a></li>
+              <li class="scroll"><a href="/status">Status</a></li>
+              <li class="scroll"><a href="/service">Services</a></li>
+              <li class="scroll"><a href="/serviceac">Service Activities</a></li>
+              <li class="scroll active"><a href="/globus">Globus Service</a></li>
+              <li class="scroll"><a href="/document">Document</a></li>
+              <li class="scroll"><a href="/contact">Contact Us</a></li>
+            </ul>
+          </div>
+        <% } %>
+      </div><!--/.container-->
+    </nav>
+  </header>
+
+  <section id="status">
+    <div id="container"> 
+      <div class="section-header">
+        <h2 class="section-title text-center wow fadeInDown">Globus Service</h2>
+          <p class="text-center wow fadeInDown">บริการโอนถ่ายข้อมูลความเร็วสูง</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="globus_section" class="wow fadeIn">
+    <div class="container">
+      <div class="row"> 
+        <div class="features">
+          <br>
+          <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#my_requested">My Requested</a></li>
+            <% if(user.role === 1) { %>
+              <li><a data-toggle="tab" href="#history">History Logs</a></li>
+            <% } %>
+          </ul>
+
+          <div class="tab-content">
+            <div id="my_requested" class="tab-pane fade in active">
+              <table id="myrequesttable" class="table table-striped">
+                <thead>
+                  <tr bgcolor="#1E90FF">
+                    <td colspan="8"><center><label><font color="white">My Requested</font></label></center></td>
+                  </tr>
+                  <tr>
+                    <th>Source</th>
+                    <th>Destination</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th style="width: 9%">Speed (Mbps)</th>                    
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if(request.length) {
+                    for(var i = 0;i < request.length;i++) { %>
+                      <tr>
+                        <td><%=request[i].source%></td>
+                        <td><%=request[i].destination%></td>
+                        <td><%=request[i].start%></td>
+                        <td><%=request[i].end%></td>
+                        <td><%=request[i].speed%></td>
+                        <td><%=request[i].name%></td> <!-- status in text -->
+                      </tr>
+                    <% } 
+                  } %>
+                </tbody>
+              </table>
+              
+              <hr> 
+              <!-- modal hidden -->
+              <p align="center">
+                <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#AddModal "><span class="fa fa-plus" aria-hidden="true"></span> Add New Globus Transfer</button>
+              </p>              
+            </div>
+
+            <!-- END OF FIRST TAB -->
+            <% if(user.role === 1) { %>
+              <div id="history" class="tab-pane fade">
+                <table id="historylogstable" class="table table-striped">
+                  <thead>
+                    <tr bgcolor="#1E90FF">
+                      <td colspan="8"><center><label><font color="white">History Logs</font></label></center></td>
+                    </tr>
+                    <tr>
+                      <th>Username</th>
+                      <th>Source</th>
+                      <th>Destination</th>
+                      <th>Start</th>
+                      <th>End</th> 
+                      <th style="width: 9%">Speed (Mbps)</th>                   
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if(history.length) {             
+                      for(var i = 0;i < history.length;i++) { %>
+                        <tr>
+                          <td><%=history[i].username%></td>
+                          <td><%=history[i].source%></td>
+                          <td><%=history[i].destination%></td>
+                          <td><%=history[i].start%></td>
+                          <td><%=history[i].end%></td>
+                          <td><%=history[i].speed%></td>
+                          <td><%=history[i].name%></td> <!-- status in text -->
+                        </tr>             
+                      <% }
+                    } %>
+                  </tbody>
+                </table>
+              </div>
+            <% } %>
+
+          </div> <!-- class="tab-content" -->
+          <br>
+        </div> <!-- class="features" -->
+      </div> <!-- class="rows" -->
+    </div> <!-- class="contrainer" -->
+  </section>
+
+  <div class="modal fade" id="AddModal" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">          
+        <form enctype="application/json" action="/rest/globus/add" method="post">
+
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h3><center> Add New Globus Transfer</center></h3>
+          </div>
+
+          <div class="modal-body">
+            <div id="alert" class="hide" role="alert"></div>
+            <div class="form-group">
+              <label>Source File Address</label>
+              <input type="text" class="form-control" name="globus_request[source]"  id="globus_request[source]" placeholder="gsiftp://elephant.globus.org/home/quser/Desktop/1GBfile" required="true">
+            </div>
+
+            <div class="form-group">
+              <label>Destination File Address</label>
+              <input type="text" class="form-control" name="globus_request[destination]" id="globus_request[destination]" placeholder="gsiftp://donkey.globus.org/home/quser/1GBfile-elephant" required="true">
+            </div>
+
+            <div class="form-group">              
+              <input type="text" class="hidden" name="user[id]" id="user[id]" value="<%=user.id%>">
+            </div>
+
+            <div class="form-group">
+              <input type="text" class="hidden" name="user[username]" id="user[username]" value="<%=user.username%>">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success btn-md" value="addService">Submit</button> 
+            <button type="button" class="btn btn-danger btn-md" data-dismiss="modal">Cancel</button> 
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- End Modal dialog -->
+
+  <footer id="footer">
+    <div class="container">
+      <div class="row">
+        <%include ./footer %>
+      </div>
+    </div>
+  </footer><!--/#footer-->
+
+  <script type="text/javascript">
+    $(document).ready(function($) {      
+      $('#myrequesttable').dataTable({
+          "pagingType": "full_numbers"
+      });
+      $('#historylogstable').dataTable({
+          "pagingType": "full_numbers"
+      });            
+    });
+  </script>
+
+</body>
+</html>
