@@ -4433,6 +4433,7 @@ module.exports.doc_page = doc_page;
 module.exports.contact = contact;
 //GLOBUS 
 module.exports.globus_page = globus_page;
+module.exports.globus_result_page = globus_result_page;
 //TOOLS
 module.exports.checkpostform = checkpostform;
 /***************************************/
@@ -4467,7 +4468,6 @@ module.exports.edit_service_rest = edit_service_rest;
 module.exports.delete_service_rest = delete_service_rest;
 module.exports.accept_service_rest = accept_service_rest;
 // globus
-module.exports.globus_result_page = globus_result_page;
 module.exports.add_globus_rest = add_globus_rest;
 module.exports.myrequested_globus_rest = myrequested_globus_rest;
 module.exports.history_globus_rest = history_globus_rest;
