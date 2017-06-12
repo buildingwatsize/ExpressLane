@@ -11,6 +11,7 @@ var cron = require('node-schedule'); //node-schedule
 var Model = require('./models/model');
 var mysql = require('mysql'); //mysql
 var spawn = require('child_process').spawn; //exec globus commands
+var requestor = require('request');
 var connection = mysql.createConnection({ //database setting
   host: 'localhost', //database IP
   user: 'root',
@@ -1309,6 +1310,34 @@ var globus_page = function(req, res) {
         connection.release();
       });
     }
+  }
+};
+
+//POST Globus result page
+var globus_result_page = function(req, res) {  
+  if (!req.isAuthenticated()) res.redirect('/');
+  else {
+    var user = req.user;
+    if (user !== undefined) user = user.toJSON();
+
+    var input = JSON.parse(JSON.stringify(req.body));
+    requestor.post({
+      url: 'http://localhost:8000/rest/globus/add', 
+      header: { 'content-type': 'application/json' },
+      json: input
+    }, function(error, response, body) {
+      var req_status;
+      if (!error && response.statusCode == 200) {
+        req_status = body.events;
+      } else {
+        req_status = ""+error;
+      }
+      res.render('globus_result', {
+        title: "Globus Service Result",          
+        user: user,
+        req_status: req_status
+      });
+    });
   }
 };
 
@@ -3821,9 +3850,9 @@ var accept_service_rest = function(req, res) {
   }
 };
 
-/* pre-function: Globus
-  in: 
-  out: 
+/* ID: 22 POST Globus add service
+  in: /rest/globus/add {user:{id, username}, globus_request:{source, destination}}
+  out: {events, timestamp, result:{request_by, from, to, Msg}}
 */
 var add_globus_rest = function(req, res) {
   var body = JSON.parse(JSON.stringify(req.body));
@@ -3982,6 +4011,236 @@ var add_globus_rest = function(req, res) {
             res.send(response_json);
             // log saved  
             var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), user.id, 22, result_text], function(err) {
+              if (err) console.log("Error inserting access_rest_log: %s", err);
+            });
+          }
+        }
+      });
+      connection.release();
+    });
+  }
+};
+
+/* ID: 23 GET Globus my requested list 
+  in: /rest/globus/myrequested?id=22&username=admin&n=3
+  out: {events, timestamp, result:{Msg, my_requested}}
+*/
+var myrequested_globus_rest = function(req, res) {
+  var url_parts = url.parse(req.url, true);
+  var url_query = url_parts.query;
+  var result_text = "";
+  var response_json = "";
+
+  res.set('Content-Type', 'application/json');
+
+  var n = 50;
+  if(url_query.n != undefined) n = url_query.n;
+  if(url_query.id == undefined || url_query.username == undefined) {
+    result_text = "Error: Invalid username or id";
+      var response_json = {
+        events: "GET User Detail Error",
+        timestamp: getTimestamp(),
+        result: {
+          errMsg: "Invalid username or id" 
+        }
+    }
+    res.send(response_json);
+    req.getConnection(function(err, connection) {
+      // log saved  
+      var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), 0, 23, result_text], function(err) {
+        if (err) console.log("Error inserting access_rest_log: %s", err);
+      });    
+      connection.release();
+    });
+  } else {
+    req.getConnection(function(err, connection) {
+      var query = connection.query('SELECT id, username, membertype FROM User WHERE id = ?', [url_query.id], function(err, user_detail) {
+        if (err) {
+          result_text = "Error: "+err;
+          var response_json = {
+            events: "GET User Detail Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Cannot selecting from database" 
+            }
+          }
+          res.send(response_json);
+          // log saved  
+          var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 23, result_text], function(err) {
+            if (err) console.log("Error inserting access_rest_log: %s", err);
+          });
+        } else {
+          if(user_detail.length != 0){ 
+            if (user_detail[0].username == url_query.username) {
+              var query_str = 'SELECT globus_logs.id, userid, User.username, status, globus_status_type.name, source, destination, start, end, speed FROM globus_logs INNER JOIN globus_status_type ON globus_logs.status = globus_status_type.id INNER JOIN User ON User.id = globus_logs.userid WHERE userid = '+url_query.id+' ORDER BY globus_logs.id DESC LIMIT '+n;
+              var query = connection.query(query_str, function(err, my_requested) {
+                if (err) {
+                  result_text = "Error: "+err;
+                  var response_json = {
+                    events: "GET Globus My Requested Error",
+                    timestamp: getTimestamp(),
+                    result: {
+                      errMsg: "Cannot selecting from database" 
+                    }
+                  }               
+                } else {
+                  result_text = "Complete: GET Services Requested";
+                  var response_json = {
+                    events: "GET Globus My Requested Complete",
+                    timestamp: getTimestamp(),
+                    result: {
+                      Msg: "GET Globus My Requested Success",
+                      my_requested: my_requested
+                    }
+                  }                 
+                }
+                res.send(response_json);
+                // log saved  
+                var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 23, result_text], function(err) {
+                  if (err) console.log("Error inserting access_rest_log: %s", err);
+                });
+              });
+            } else {
+              result_text = "Error: Not found user";
+              var response_json = {
+                events: "GET Globus My Requested Error",
+                timestamp: getTimestamp(),
+                result: {
+                  errMsg: "Not found user" 
+                }
+              }
+              res.send(response_json);
+              // log saved  
+              var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 23, result_text], function(err) {
+                if (err) console.log("Error inserting access_rest_log: %s", err);
+              });
+            }   
+          } else { 
+            result_text = "Error: Invalid username or id";
+            var response_json = {
+              events: "GET User Detail Error",
+              timestamp: getTimestamp(),
+              result: {
+                errMsg: "Invalid username or id" 
+              }
+            }
+            res.send(response_json);
+            // log saved  
+            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 23, result_text], function(err) {
+              if (err) console.log("Error inserting access_rest_log: %s", err);
+            });
+          }
+        }
+      });
+      connection.release();
+    });
+  }
+};
+
+/* ID: 24 GET Globus get all service history logs [admin]
+  in: /rest/globus/history?id=22&username=admin&n=3
+  out: {events, timestamp, result:{Msg}}
+*/
+var history_globus_rest = function(req, res) {
+  var url_parts = url.parse(req.url, true);
+  var url_query = url_parts.query;
+  var result_text = "";
+  var response_json = "";
+
+  res.set('Content-Type', 'application/json');
+
+  var n = 50;
+  if(url_query.n != undefined) n = url_query.n;
+  if(url_query.id == undefined || url_query.username == undefined) {
+    result_text = "Error: Invalid username or id";
+      var response_json = {
+        events: "GET User Detail Error",
+        timestamp: getTimestamp(),
+        result: {
+          errMsg: "Invalid username or id" 
+        }
+    }
+    res.send(response_json);
+    req.getConnection(function(err, connection) {
+    // log saved  
+      var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), 0, 24, result_text], function(err) {
+        if (err) console.log("Error inserting access_rest_log: %s", err);
+      }); 
+    });   
+  } else {
+    req.getConnection(function(err, connection) {
+      var query = connection.query('SELECT id, username, membertype FROM User WHERE id = ?', [url_query.id], function(err, user_detail) {
+        if (err) {
+          result_text = "Error: "+err;
+          var response_json = {
+            events: "GET User Detail Error",
+            timestamp: getTimestamp(),
+            result: {
+              errMsg: "Cannot selecting from database" 
+            }
+          }
+          res.send(response_json);
+          // log saved  
+          var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 24, result_text], function(err) {
+            if (err) console.log("Error inserting access_rest_log: %s", err);
+          });
+        } else {
+          if(user_detail.length != 0){ 
+            if (user_detail[0].username == url_query.username && user_detail[0].membertype == 2) {
+              var query = connection.query('SELECT globus_logs.id, userid, User.username, status, globus_status_type.name, source, destination, start, end, speed FROM globus_logs INNER JOIN globus_status_type ON globus_logs.status = globus_status_type.id INNER JOIN User ON User.id = globus_logs.userid ORDER BY globus_logs.id DESC LIMIT '+n, function(err, history) {
+                if (err) {
+                  result_text = "Error: "+err;
+                  var response_json = {
+                    events: "GET Globus History Error",
+                    timestamp: getTimestamp(),
+                    result: {
+                      errMsg: "Cannot selecting from database" 
+                    }
+                  }               
+                } else {
+                  result_text = "Complete: GET Services Requested";
+                  var response_json = {
+                    events: "GET Globus History Complete",
+                    timestamp: getTimestamp(),
+                    result: {
+                      Msg: "GET Globus History Success",
+                      history: history
+                    }
+                  }                 
+                }
+                res.send(response_json);
+                // log saved  
+                var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 24, result_text], function(err) {
+                  if (err) console.log("Error inserting access_rest_log: %s", err);
+                });
+              });
+            } else {
+              result_text = "Error: Not administrator privilege";
+              var response_json = {
+                events: "GET Globus My Requested Error",
+                timestamp: getTimestamp(),
+                result: {
+                  errMsg: "Not administrator privilege" 
+                }
+              }
+              res.send(response_json);
+              // log saved  
+              var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 24, result_text], function(err) {
+                if (err) console.log("Error inserting access_rest_log: %s", err);
+              });
+            }   
+          } else { 
+            result_text = "Error: Invalid username or id";
+            var response_json = {
+              events: "GET User Detail Error",
+              timestamp: getTimestamp(),
+              result: {
+                errMsg: "Invalid username or id" 
+              }
+            }
+            res.send(response_json);
+            // log saved  
+            var query = connection.query('INSERT INTO access_rest_log(timestamp, userid, accessType, result) VALUES (?,?,?,?)', [getTimestamp(), url_query.id, 24, result_text], function(err) {
               if (err) console.log("Error inserting access_rest_log: %s", err);
             });
           }
@@ -4208,4 +4467,7 @@ module.exports.edit_service_rest = edit_service_rest;
 module.exports.delete_service_rest = delete_service_rest;
 module.exports.accept_service_rest = accept_service_rest;
 // globus
+module.exports.globus_result_page = globus_result_page;
 module.exports.add_globus_rest = add_globus_rest;
+module.exports.myrequested_globus_rest = myrequested_globus_rest;
+module.exports.history_globus_rest = history_globus_rest;

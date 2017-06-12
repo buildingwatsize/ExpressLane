@@ -138,6 +138,9 @@ app.get('/document', route.doc_page);
 app.get('/contact', route.contact);
 //GLOBUS
 app.get('/globus', route.globus_page);
+app.post('/globus_result', route.globus_result_page);
+app.get('/rest/globus/myrequested', route.myrequested_globus_rest);
+app.get('/rest/globus/history', route.history_globus_rest);
 //TOOLS
 app.post('/tools/checkpostform', route.checkpostform);
 
