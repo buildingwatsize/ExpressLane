@@ -25,7 +25,6 @@
   <!-- <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css"> -->
 
   <script src="js/jquery.js"></script>
-  <script src="js/bootstrap.min.js"></script>
   <script src="http://maps.google.com/maps/api/js?sensor=true"></script>
   <script src="js/owl.carousel.min.js"></script>
   <script src="js/mousescroll.js"></script>
@@ -47,22 +46,31 @@
   <header id="header">
     <nav id="main-menu" class="navbar navbar-default navbar-fixed-top" role="banner">
       <div class="container">
-        <div class="navbar-header">
+
+        <div class="navbar-header">          
+          <div class="navbar-brand">
+            <a href="/">
+              <img class="hidden-xs" src="uninet_navbar.gif" style="display:inline-block; height:60px" alt="logo">&nbsp;&nbsp;&nbsp;
+              <font class="hidden-xs" style="color: grey"><font style="color: darkblue">UniNet</font> Express Lane Services</font>
+              <font class="visible-xs" style="color: grey;margin-top: -1px"><font style="color: darkblue">UniNet</font> Express Lane Services</font>
+            </a>
+          </div>
+
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
               <span class="sr-only">Toggle navigation</span>
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="/"><img src="uninet_navbar.gif" style="display:inline-block; height:60px" alt="logo">&nbsp;&nbsp;&nbsp;
-          <font>UniNet Express Lane Services</font></a>
+          </button>          
         </div>
 
         <% if (!req.isAuthenticated()) { %>
-          <ul class="nav navbar-nav navbar-right">
-            <li class="scroll active"><a href="/">Home</a></li>
-            <li><a href="#" data-toggle="modal" data-target="#login-modal"><span class="glyphicon glyphicon-log-in"></span> &nbsp; Login</a></li>
-          </ul>
+          <div class="collapse navbar-collapse navbar-right">  
+            <ul class="nav navbar-nav navbar-right">
+              <li class="scroll active"><a href="/">Home</a></li>
+              <li><a href="#" data-toggle="modal" data-target="#login-modal"><span class="glyphicon glyphicon-log-in"></span> &nbsp; Login</a></li>
+            </ul>
+          </div>  
         <% } else { %>
           <% if(user.role===1){%>
             <!-- Admin Menu -->
@@ -113,7 +121,7 @@
       </div>
     </div>
     <!-- Login Modal -->
-  </header>
+  </header>  
 
   <section id="status">
     <div id="container"> 
@@ -124,26 +132,26 @@
     </div>
   </section>
 
-  <section id="cta" class="wow fadeIn">
+  <!-- document -->
+  <section id="document">
     <div class="container">
       <div class="row">
-        <div class="col-sm-6 wow fadeInLeft">
+        <div class="col-md-6 col-sm-12 col-xs-12 wow fadeInLeft">
           <h3 class="column-title">Video Intro</h3>
           <!-- 16:9 aspect ratio -->
           <div class="embed-responsive embed-responsive-16by9">
             <iframe src="//player.vimeo.com/video/58093852?title=0&amp;byline=0&amp;portrait=0&amp;color=e79b39" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
           </div>
+          <br>
         </div>
-
-        <div class="col-sm-6 wow fadeInRight">
+        <div class="col-md-6 col-sm-12 col-xs-12 wow fadeInRight">
           <h3 class="column-title">Download</h3>
-          <p>เอกสารเกี่ยวกับระบบทางด่วนข้อมูลเครือข่ายเทคโนโลยีสารสนเทศเพื่อพัฒนาการศึกษา </p>
-          <a href="/PDF/UniNet-Express-Guildline.pdf"><span class="fa fa-download"></span><p style="font-size: 1.2em">กรอบการบริการ แนวทางปฏิบัติ และนโยบายการใช้งาน ระบบทางด่วนข้อมูลเครือข่าย UniNet</p></a></li>
-          </ul>        
+          <p>เอกสารเกี่ยวกับระบบทางด่วนข้อมูลเครือข่ายเทคโนโลยีสารสนเทศ เพื่อพัฒนาการศึกษา </p>
+          <p style="font-size: 1.25em"><a href="/PDF/UniNet-Express-Guildline.pdf"><span class="fa fa-download"></span> &nbsp; กรอบการบริการ แนวทางปฏิบัติ และนโยบายการใช้งาน ระบบทางด่วนข้อมูลเครือข่าย UniNet</a></p>
         </div>
       </div>
-    </div>   
-  </section>
+    </div>
+  </section><!--/#document-->
 
   <footer id="footer">
     <div class="container">

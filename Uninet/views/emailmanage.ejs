@@ -29,15 +29,21 @@
 	<header id="header">
 	    <nav id="main-menu" class="navbar navbar-default navbar-fixed-top" role="banner">
 	      <div class="container">
-	        <div class="navbar-header">
+	        <div class="navbar-header">          
+	          <div class="navbar-brand">
+	            <a href="/">
+	              <img class="hidden-xs" src="uninet_navbar.gif" style="display:inline-block; height:60px" alt="logo">&nbsp;&nbsp;&nbsp;
+	              <font class="hidden-xs" style="color: grey"><font style="color: darkblue">UniNet</font> Express Lane Services</font>
+	              <font class="visible-xs" style="color: grey;margin-top: -1px"><font style="color: darkblue">UniNet</font> Express Lane Services</font>
+	            </a>
+	          </div>
+
 	          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
 	              <span class="sr-only">Toggle navigation</span>
 	              <span class="icon-bar"></span>
 	              <span class="icon-bar"></span>
 	              <span class="icon-bar"></span>
-	          </button>
-	          <a class="navbar-brand" href="/"><img src="uninet_navbar.gif" style="display:inline-block; height:60px" alt="logo">&nbsp;&nbsp;&nbsp;
-	          <font>UniNet Express Lane Services</font></a>
+	          </button>          
 	        </div>
 	        <% if(user.role===1){%>
 	          <div class="collapse navbar-collapse navbar-right">

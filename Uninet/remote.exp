@@ -4,22 +4,16 @@ set name_source [lindex $argv 0]
 set name_destination [lindex $argv 1]
 set log [open "logs.log" w]
 
-spawn ssh quser@192.168.0.164
-expect "assword:"
-send "vk0kipN;ik\r"
-expect "$"
+# transparent ssh to BSE Node and next to globus client 
+spawn ssh root@202.29.226.170 ssh quser@10.10.1.15
+
 send "myproxy-logon -s elephant.globus.org\r"
 expect "phrase:"
 send "vk0kipN;ik\r"
 expect { 
-	"$" { puts $log $expect_out(buffer) }
+	"" { puts $log $expect_out(buffer) }
 }
 send "globus-url-copy -vb $name_source $name_destination \r"
 expect {
     "inst" { puts $log $expect_out(buffer) ; exp_continue }
-    "*$" { send "exit\r" ; eof }
 }
-close $log
-
-# src = gsiftp://elephant.globus.org/home/quser/Desktop/1GBfile 
-# des = gsiftp://donkey.globus.org/home/quser/1GBfile-elephant
