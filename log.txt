@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/home/xlservice/ExpressLane/update_ryu_status.py", line 23, in <module>
+    response = urllib.urlopen(url_sw)			# GET REST API
+  File "/usr/lib/python2.7/urllib.py", line 87, in urlopen
+    return opener.open(url)
+  File "/usr/lib/python2.7/urllib.py", line 208, in open
+    return getattr(self, name)(url)
+  File "/usr/lib/python2.7/urllib.py", line 345, in open_http
+    h.endheaders(data)
+  File "/usr/lib/python2.7/httplib.py", line 975, in endheaders
+    self._send_output(message_body)
+  File "/usr/lib/python2.7/httplib.py", line 835, in _send_output
+    self.send(msg)
+  File "/usr/lib/python2.7/httplib.py", line 797, in send
+    self.connect()
+  File "/usr/lib/python2.7/httplib.py", line 778, in connect
+    self.timeout, self.source_address)
+  File "/usr/lib/python2.7/socket.py", line 571, in create_connection
+    raise err
+IOError: [Errno socket error] [Errno 111] Connection refused

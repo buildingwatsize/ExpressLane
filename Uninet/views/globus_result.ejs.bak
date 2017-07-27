@@ -101,16 +101,14 @@
     </div>
   </section>
 
-  <div class="container">
+  <div class="container-fluid">
     <div class="row">
-      <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="col-xs-8 col-xs-offset-2">
         <div class="loginmodal-container" style="margin-top: 30px; max-width: 100%">
           <div class="container"> 
-            <div class="row">
-              <div class="col-md-11 col-sm-11 col-xs-11" style="margin-left: 30px">
-                <h2>Your requested submitted!</h2>
-                <p>ข้อมูลการร้องขอของท่านได้ถูกส่งแล้ว กรุณารอ 5 วินาที ระบบกำลังกลับไปยังหน้าก่อนหน้า หรือสามารถ <a href="/globus">คลิ๊กที่นี่</a> เพื่อกลับไปด้วยตนเอง</p>
-              </div>
+            <div class="col-xs-8 col-xs-offset-2">
+              <h2>Your requested submitted!</h2>
+              <p>ข้อมูลการร้องขอของท่านได้ถูกส่งแล้ว กรุณารอ 5 วินาที ระบบกำลังกลับไปยังหน้าก่อนหน้า หรือสามารถ <a href="/globus">คลิ๊กที่นี่</a> เพื่อกลับไปด้วยตนเอง</p>
             </div>            
           </div>
         </div>

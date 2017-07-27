@@ -291,22 +291,22 @@ var status = function(req, res) {
     if (user !== undefined) user = user.toJSON();    
     if (user.role === 1) {
       req.getConnection(function(err, connection) {
-        var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status) {
+        var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y-%m-%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM Online_Status', function(err, status) {
           if (err) console.log("Error selecting Online_Status: %s ", err);
           else { 
-            var query = connection.query('SELECT * FROM Netfpga_Status', function(err, rows) {
+            var query = connection.query('SELECT * FROM Netfpga_Status ORDER BY timestamp', function(err, rows) {
               if (err) console.log("Error selecting Netfpga_Status: %s ", err);
               else { 
-                var query = connection.query('SELECT *  FROM Nagios_Status', function(err, nagios) {
+                var query = connection.query('SELECT *  FROM Nagios_Status ORDER BY timestamp DESC', function(err, nagios) {
                   if (err) console.log("Error selecting Nagios_Status: %s ", err);
                   else { 
-                    var query = connection.query('SELECT id , zone , DATE_FORMAT(timestamp , "%Y/%m/%d %H:%i:%S") AS timestamp , in_port1 , dl_dest1 , output1 , in_port2 , dl_dest2 , output2 , packet  FROM log_netfpga', function(err, logs_netfpga) {
+                    var query = connection.query('SELECT id, zone, DATE_FORMAT(timestamp, "%Y-%m-%d %H:%i:%S") AS timestamp, in_port1, dl_dest1, output1, in_port2 , dl_dest2 , output2 , packet FROM log_netfpga ORDER BY timestamp DESC LIMIT 1000', function(err, logs_netfpga) {
                       if (err) console.log("Error selecting log_netfpga: %s ", err);
                       else { 
-                        var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y/%m/%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM log_Online_status', function(err, logs_node) {
+                        var query = connection.query('SELECT id , zone , statuss , DATE_FORMAT(start_time , "%Y-%m-%d %H:%i:%S") AS start_time , duration_time , src_mac , in_port , dest_mac , out_port , packet_count FROM log_Online_status ORDER BY start_time DESC', function(err, logs_node) {
                           if (err) console.log("Error selecting log_Online_status: %s ", err);
                           else {
-                            var query = connection.query('SELECT id , zone , DATE_FORMAT(timestamp , "%Y/%m/%d %H:%i:%S") AS timestamp , service , statuss FROM log_nagios', function(err, logs_nagios) {
+                            var query = connection.query('SELECT id , zone , DATE_FORMAT(timestamp , "%Y-%m-%d %H:%i:%S") AS timestamp , service , statuss FROM log_nagios ORDER BY timestamp DESC', function(err, logs_nagios) {
                               if (err) console.log("Error selecting log_nagios: %s ", err);
                               else {
                                 res.render('status', {
@@ -1988,7 +1988,7 @@ var services_approved_rest = function(req, res) {
         } else {
           if(user_detail.length != 0){ 
             if (user_detail[0].username == url_query.username) {
-              var query = connection.query('SELECT ResourceAllocated.said, User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actType = 4', function(err, service_requested) {
+              var query = connection.query('SELECT ResourceAllocated.said, User.username,ResourceAllocated.resourceString1,ResourceAllocated.resourceString2,ResourceAllocated.IP1,ResourceAllocated.IP2,DATE_FORMAT(ResourceAllocated.startTime, "%Y/%m/%d %H:%i:%S") AS startTime,DATE_FORMAT(ResourceAllocated.endTime, "%Y/%m/%d %H:%i:%S") AS endTime FROM ResourceAllocated LEFT JOIN ServiceActivities ON ResourceAllocated.said=ServiceActivities.said JOIN ServiceRequests ON ServiceActivities.sid=ServiceRequests.sid JOIN User ON User.id = ServiceRequests.user WHERE actType = 4', function(err, service_approved) {
                 if (err) {
                   result_text = "Error: "+err;
                   var response_json = {

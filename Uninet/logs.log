@@ -1,0 +1,11 @@
+
+vk0kipN;ik
+globus-url-copy -vb gsiftp://elephant.globus.org/home/quser/1GBfile gsiftp://donkey.globus.org/home/quser/1GBfile-elephant 
+
+A credential has been received for user quser in /tmp/x509up_u1000.
+Source: gsiftp://elephant.globus.org/home/quser/
+Dest:   gsiftp://donkey.globus.org/home/quser/
+  1GBfile  ->  1GBfile-elephant
+
+    584056832 bytes       111.40 MB/sec avg       111.40 MB/sec inst
+   1073741824 bytes       111.30 MB/sec avg       111.19 MB/sec inst
